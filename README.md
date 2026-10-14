@@ -2,7 +2,7 @@
 
 Serviço de corridas com API NestJS, worker de eventos e interface React.
 
-**Estado atual:** API NestJS inicial implementada com POST, GET cache-aside e PATCH de corridas. Relay da outbox e worker de projeção MongoDB/Redis estão implementados. Build compila API e worker; integração aguarda os serviços locais. UI, Compose e CI ainda estão pendentes.
+**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox e worker de projeção MongoDB/Redis implementados. Compose inicial e healthcheck da API adicionados, mas ainda aguardam validação com daemon Docker. UI e CI continuam pendentes.
 
 ## Desenvolvimento
 
@@ -52,9 +52,19 @@ npm run db:migrate:deploy
 npm run start:dev
 ```
 
-Em outro terminal, com MySQL, RabbitMQ, MongoDB e Redis iniciados e variáveis configuradas no `.env`, execute `npm run start:worker`.
+Para iniciar a infraestrutura e a API, gere a chave de desenvolvimento e rode o Compose na raiz do repositório:
 
-`POST /v1/corridas` cria com JWT RS256 de perfil `passageiro` e cabeçalho `Idempotency-Key`; `GET /v1/corridas/:id` consulta a corrida do passageiro; `PATCH /v1/corridas/:id/status` aceita, inicia ou finaliza como motorista. Gere tokens de desenvolvimento com `npm run token:dev -- passageiro passageiro-demo` ou `npm run token:dev -- motorista motorista-demo`. As chaves ficam em `api/.dev-keys/`, ignoradas pelo Git, e são apenas para desenvolvimento. A aplicação ainda não dispõe de Docker Compose; MySQL precisa ser iniciado separadamente.
+```powershell
+Set-Location api
+npm run keys:dev
+Set-Location ..
+docker compose up --build -d
+docker compose ps
+```
+
+O worker aguarda a API e os serviços necessários ficarem saudáveis. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. A interface React e a instrumentação Prometheus da aplicação ainda não estão incluídas.
+
+`POST /v1/corridas` cria com JWT RS256 de perfil `passageiro` e cabeçalho `Idempotency-Key`; `GET /v1/corridas/:id` consulta a corrida do passageiro; `PATCH /v1/corridas/:id/status` aceita, inicia ou finaliza como motorista. Gere tokens de desenvolvimento com `npm run token:dev -- passageiro passageiro-demo` ou `npm run token:dev -- motorista motorista-demo`. As chaves ficam em `api/.dev-keys/`, ignoradas pelo Git, e são apenas para desenvolvimento. O Compose inicial está disponível acima; ainda falta validar a subida dos containers neste ambiente.
 
 ## Uso de IA
 

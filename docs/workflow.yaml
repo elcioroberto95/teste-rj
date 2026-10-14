@@ -57,7 +57,7 @@ workflow:
       blockers:
         - id: B-002
           status: open
-          description: "Daemon Docker local não está acessível; integração com MySQL e concorrência ainda não podem ser validadas."
+          description: "Daemon Docker local não está acessível; Compose, migration, healthchecks e integração com os serviços ainda não podem ser executados."
           owner: environment
           resolution: "Iniciar Docker Desktop e executar a migration e as verificações de integração ao retomar."
           blocks:
@@ -67,6 +67,10 @@ workflow:
           description: "Cliente Prisma é gerado; API NestJS com rotas iniciais compila."
           status: verified
           evidence: "api: npm run db:generate e npm run build executados em 2026-10-14; chaves e JWT local de desenvolvimento gerados."
+        - id: FND-002
+          description: "Compose define infraestrutura local, API e worker com dependências por healthcheck; API expõe health endpoint público."
+          status: pending
+          evidence: null
         - id: AC01
           description: "JWT ausente, inválido ou expirado retorna 401; token válido autentica."
           status: pending

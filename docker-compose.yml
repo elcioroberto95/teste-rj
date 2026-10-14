@@ -1,0 +1,139 @@
+services:
+  mysql:
+    image: mysql:8.4.11
+    environment:
+      MYSQL_DATABASE: corridas
+      MYSQL_USER: corridas
+      MYSQL_PASSWORD: desenvolvimento
+      MYSQL_ROOT_PASSWORD: root-desenvolvimento
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks: [corridas]
+
+  rabbitmq:
+    image: rabbitmq:4.2.9-management
+    environment:
+      RABBITMQ_DEFAULT_USER: corridas
+      RABBITMQ_DEFAULT_PASS: desenvolvimento
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks: [corridas]
+
+  mongo:
+    image: mongo:8.0.32-noble
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: desenvolvimento
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --username root --password $${MONGO_INITDB_ROOT_PASSWORD} --authenticationDatabase admin --eval 'db.adminCommand({ping: 1}).ok' localhost:27017/admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks: [corridas]
+
+  redis:
+    image: redis:8.4.7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [corridas]
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: mysql://corridas:desenvolvimento@mysql:3306/corridas
+      JWT_PUBLIC_KEY_PATH: /run/keys/public.pem
+      JWT_ISSUER: corridas-local
+      JWT_AUDIENCE: corridas-api
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./api/.dev-keys/public.pem:/run/keys/public.pem:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    networks: [corridas]
+
+  worker:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    command: ["npm", "run", "start:worker"]
+    environment:
+      DATABASE_URL: mysql://corridas:desenvolvimento@mysql:3306/corridas
+      RABBITMQ_URL: amqp://corridas:desenvolvimento@rabbitmq:5672
+      MONGODB_URL: mongodb://root:desenvolvimento@mongo:27017/corridas?authSource=admin
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      api:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [corridas]
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks: [corridas]
+
+volumes:
+  mysql-data:
+  rabbitmq-data:
+  mongo-data:
+  redis-data:
+  prometheus-data:
+
+networks:
+  corridas:
+    driver: bridge

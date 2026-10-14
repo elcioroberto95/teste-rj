@@ -3,8 +3,10 @@ import { APP_GUARD } from "@nestjs/core";
 import { CorridasModule } from "./corridas/corridas.module.js";
 import { JwtGuard } from "./shared/auth/jwt.guard.js";
 import { PrismaModule } from "./shared/database/prisma.module.js";
+import { HealthController } from "./health.controller.js";
 
 @Module({
+  controllers: [HealthController],
   imports: [PrismaModule, CorridasModule],
   providers: [{ provide: APP_GUARD, useClass: JwtGuard }],
 })

@@ -10,7 +10,7 @@ import { importSPKI, jwtVerify } from "jose";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { Perfil, UsuarioAutenticado } from "./auth.types.js";
-import { PERFIS_KEY } from "./roles.decorator.js";
+import { PERFIS_KEY, PUBLIC_ROUTE_KEY } from "./roles.decorator.js";
 
 type RequestWithUser = {
   headers: { authorization?: string };
@@ -24,6 +24,9 @@ export class JwtGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (this.reflector.getAllAndOverride<boolean>(PUBLIC_ROUTE_KEY, [
+      context.getHandler(), context.getClass(),
+    ])) return true;
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const authorization = request.headers.authorization;
     if (!authorization?.startsWith("Bearer ")) throw new UnauthorizedException();
