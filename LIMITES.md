@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-API NestJS com JWT RS256, POST idempotente, GET cache-aside e PATCH com transições/controle de versão; migration de corrida, idempotência e outbox adicionada. Prisma 7.10.0 gerou o cliente. Relay RabbitMQ, worker com auditoria MongoDB, cache Redis, UI React inicial e Compose com oito serviços estão implementados. `docker-compose config --quiet`, parsing de YAML e builds da API/UI passaram. Chaves RSA e emissão de JWT de desenvolvimento foram geradas localmente. Fluxo integrado ainda pendente; instrumentação Prometheus, CI, testes, observabilidade completa e Kubernetes permanecem pendentes. A migration e os serviços não foram executados porque o daemon Docker local não está acessível.
+API NestJS com JWT RS256, POST idempotente, GET cache-aside e PATCH com transições/controle de versão; migration de corrida, idempotência e outbox adicionada. Prisma 7.10.0 gerou o cliente. Relay RabbitMQ, worker com auditoria MongoDB, cache Redis, UI React inicial e Compose com oito serviços estão implementados. `docker-compose config --quiet`, parsing de YAML e builds da API/UI passaram; cinco testes unitários de domínio passaram. Chaves RSA e emissão de JWT de desenvolvimento foram geradas localmente. Fluxo integrado, testes HTTP/concorrência, instrumentação Prometheus, CI, observabilidade completa e Kubernetes permanecem pendentes. O audit atual registra 24 vulnerabilidades (20 moderadas, 4 altas); as altas reportadas vêm de dependências transitivas da CLI Prisma 7.10 (`deepmerge-ts` e `mysql2`) e exigiriam downgrade major segundo o npm, que não aplicamos. A migration e os serviços não foram executados porque o daemon Docker local não está acessível.
 
 ## Escopo deliberadamente excluído
 

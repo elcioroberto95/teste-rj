@@ -19,6 +19,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [x] Implementar outbox/publicador, contratos e topologia RabbitMQ; definir retries limitados/DLQ (AC10). Falta validação integrada.
 - [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Falta validação integrada.
 - [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Falta validação integrada.
+- [x] Adicionar testes unitários de criação e transições do domínio; integração HTTP e concorrência no banco pendentes.
 - [ ] Implementar UI mínima e demonstrar fluxo completo (AC13). Código React implementado; validação integrada pendente.
 - [ ] Configurar CI para lint, testes e build de imagens; validar execução (AC14).
 

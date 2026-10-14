@@ -2,7 +2,7 @@
 
 Serviço de corridas com API NestJS, worker de eventos e interface React.
 
-**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. O Compose define os oito serviços e valida sintaxe, mas o build das imagens e o fluxo integrado ainda aguardam daemon Docker.
+**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. Cinco testes unitários de domínio passam. O Compose define os oito serviços e valida sintaxe, mas o build das imagens e o fluxo integrado ainda aguardam daemon Docker.
 
 ## Desenvolvimento
 
@@ -49,6 +49,7 @@ npm install
 npm run keys:dev
 npm run db:generate
 npm run db:migrate:deploy
+npm test
 npm run start:dev
 ```
 

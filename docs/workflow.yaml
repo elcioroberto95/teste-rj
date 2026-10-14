@@ -75,6 +75,10 @@ workflow:
           description: "UI React compila para produção."
           status: verified
           evidence: "ui: npm run build passou em 2026-10-14; fluxos manuais ainda pendentes."
+        - id: FND-004
+          description: "Testes unitários cobrem criação, fluxo válido, versão, motorista e transições inválidas do domínio."
+          status: verified
+          evidence: "api: npm test passou; 1 suíte e 5 testes em 2026-10-14."
         - id: AC01
           description: "JWT ausente, inválido ou expirado retorna 401; token válido autentica."
           status: pending
