@@ -2,7 +2,7 @@
 
 Serviço de corridas com API NestJS, worker de eventos e interface React.
 
-**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. Testes unitários, lint e builds passam. Em 2026-10-14, os oito serviços foram construídos e iniciados pelo Compose; migration, healthchecks, proxy da UI, autorização, idempotência e projeção de eventos foram exercitados. Concorrência simultânea, reentrega após falha, observabilidade completa, Kubernetes e execução remota do GitHub Actions seguem pendentes.
+**Estado atual:** API NestJS com cadastro/login de passageiros e motoristas, POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React implementados. Testes unitários, lint e builds passam. Em 2026-10-14, os oito serviços foram construídos e iniciados pelo Compose; migration de usuários, autenticação por perfil, autorização, idempotência e projeção de eventos foram exercitadas via HTTP. Revisão manual da UI, concorrência simultânea, reentrega após falha, observabilidade completa, Kubernetes e execução remota do GitHub Actions seguem pendentes.
 
 ## Desenvolvimento
 
@@ -63,9 +63,9 @@ docker compose up --build -d
 docker compose ps
 ```
 
-O worker aguarda a API e os serviços necessários ficarem saudáveis. Acesse a UI em `http://localhost:8080`; o proxy encaminha `/v1` para a API. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. Prometheus inicia com scrape de si próprio; métricas da API/worker ainda não foram instrumentadas. A execução atual do Compose foi validada; consulte `specs/002-ambiente-local.md` para evidências e limites do smoke test.
+O worker aguarda a API e os serviços necessários ficarem saudáveis. No Compose, acesse `http://localhost:3000`: a UI permite criar conta ou entrar, e o proxy encaminha `/v1` para a API. A API também fica disponível diretamente em `http://localhost:3001` para testes. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. Prometheus inicia com scrape de si próprio; métricas da API/worker ainda não foram instrumentadas. Consulte `specs/002-ambiente-local.md` para evidências e limites do smoke test.
 
-`POST /v1/corridas` cria com JWT RS256 de perfil `passageiro` e cabeçalho `Idempotency-Key`; `GET /v1/corridas/:id` consulta a corrida do passageiro; `PATCH /v1/corridas/:id/status` aceita, inicia ou finaliza como motorista. Gere tokens de desenvolvimento com `npm run token:dev -- passageiro passageiro-demo` ou `npm run token:dev -- motorista motorista-demo`. As chaves ficam em `api/.dev-keys/`, ignoradas pelo Git, e são apenas para desenvolvimento.
+Na UI, crie uma conta como passageiro ou motorista usando nome, email e senha (mínimo de 8 caracteres). O cadastro persiste a conta no MySQL e inicia a sessão; depois, entre com email e senha. Cada conta tem UUID gerado pelo backend e JWT RS256 de uma hora; o token fica em memória no navegador. Crie uma conta de cada perfil para demonstrar a jornada completa. Para chamadas manuais, `POST /v1/corridas` exige JWT de passageiro e `Idempotency-Key`; `GET /v1/corridas/:id` consulta como proprietário; `PATCH /v1/corridas/:id/status` altera como motorista. Gere a chave local antes com `npm run keys:dev`; arquivos em `api/.dev-keys/` são ignorados pelo Git e servem apenas ao ambiente local. O script `npm run token:dev` permanece disponível para testes manuais.
 
 ## Uso de IA
 

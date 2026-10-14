@@ -20,7 +20,8 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Falta validação integrada.
 - [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Falta validação integrada.
 - [x] Adicionar testes unitários de criação e transições do domínio; integração HTTP e concorrência no banco pendentes.
-- [x] Implementar UI mínima e demonstrar fluxo básico (AC13). UI e proxy `/v1/health` responderam HTTP 200; API integrada exercitada. Fluxo visual manual ainda pendente.
+- [x] Implementar UI mínima e demonstrar fluxo básico (AC13). `localhost:3000/` serve UI HTTP 200 com cadastro/login; o proxy `/v1/health` e API direta em `localhost:3001/v1/health` respondem `status=ok`.
+- [ ] Validar visualmente no navegador o cadastro, login e logout da UI com contas dos dois perfis; API e proxy same-origin já foram exercitados via HTTP.
 - [ ] Configurar CI para lint, testes e build de imagens; validar execução (AC14). Workflow criado; falta execução no GitHub Actions.
 
 ## 2. Operação — peso alto
@@ -52,3 +53,4 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 
 - [x] Executar os testes isolados `api/test/jwt.guard.spec.ts`; passaram junto aos testes de domínio (15 testes, 2 suítes).
 - [x] Validar AC01/AC02: testes JwtGuard e fluxo HTTP com consulta do proprietário e rejeição 403 para outro passageiro.
+- [x] Implementar cadastro e login para passageiros e motoristas, persistência MySQL, senha scrypt e JWT de sessão; API integrada validada para ambos os perfis. Revisão manual dos formulários da UI pendente.

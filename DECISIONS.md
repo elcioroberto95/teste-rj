@@ -23,12 +23,12 @@ Status geral: escolhas registradas; validar a implementação e atualizar as con
 - Escolha: cache-aside; GET pode servir status levemente atrasado até o worker aplicar o evento, com fallback em miss/indisponibilidade. PATCH responde com o estado confirmado no MySQL.
 - Trade-off: melhor aproveitamento do cache com janela explícita de consistência eventual. Autorização por proprietário ainda precisa ser aplicada também no caminho de cache.
 
-## 4. JWT de teste com chave pública
+## 4. Cadastro, login e JWT RS256
 
-- Contexto: o teste exige validar JWT e perfis, sem exigir um provedor de identidade.
-- Alternativas: JWKS remoto; chave pública local; implementação de login com senha.
-- Escolha proposta: chave pública local e tokens de teste, com validação de algoritmo, expiração, emissor e audiência.
-- Trade-off: sem descoberta/rotação automática de chaves; montagem local mais simples. Nenhuma chave de produção será versionada.
+- Contexto: a UI precisa permitir que o avaliador obtenha uma identidade passageiro/motorista, sem depender de um JWT fornecido por outro sistema.
+- Alternativas: aceitar apenas JWT externo; emitir sujeitos aleatórios de demonstração; persistir contas com cadastro/login.
+- Escolha: cadastrar usuários no MySQL com email único, perfil escolhido no cadastro e senha derivada por scrypt com salt; emitir JWT RS256 de uma hora com `sub` UUID e perfil persistidos. O JwtGuard mantém validação de algoritmo, expiração, emissor e audiência.
+- Trade-off: adiciona credenciais e gestão de chave privada; recuperação de senha, verificação de email, rate limiting e MFA ficam fora do desafio. A chave local é ignorada pelo Git e deve ser substituída por gestão segura de segredos em produção.
 
 Para os testes, usar Jest integrado ao NestJS. Testes unitários cobrem regras sem infraestrutura; garantias de transação e entrega serão verificadas com MySQL/RabbitMQ reais em integração, evitando tratar mocks como prova dessas garantias.
 

@@ -11,7 +11,9 @@ type Corrida = {
 };
 
 type Perfil = "passageiro" | "motorista";
+type Usuario = { id: string; nome: string; email: string; perfil: Perfil };
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+type ModoAuth = "cadastro" | "login";
 const PROXIMO_STATUS: Partial<Record<Corrida["status"], Corrida["status"]>> = {
   SOLICITADA: "ACEITA",
   ACEITA: "EM_ANDAMENTO",
@@ -38,6 +40,11 @@ function erroDaResposta(body: unknown, fallback: string): string {
 export default function App() {
   const [token, setToken] = useState("");
   const [perfil, setPerfil] = useState<Perfil>("passageiro");
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [modoAuth, setModoAuth] = useState<ModoAuth>("cadastro");
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
   const [ids, setIds] = useState(idsDaSessao);
@@ -78,6 +85,42 @@ export default function App() {
   }, [consultar, idBusca, token]);
 
   const proximoStatus = useMemo(() => corrida && PROXIMO_STATUS[corrida.status], [corrida]);
+
+  async function autenticar(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setNotice(null);
+    try {
+      const cadastro = modoAuth === "cadastro";
+      const response = await fetch(`${API_BASE}/v1/auth/${cadastro ? "usuarios" : "sessoes"}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cadastro ? { nome, email, senha, perfil } : { email, senha }),
+      });
+      const body: unknown = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(erroDaResposta(body, `Falha HTTP ${response.status}`));
+      if (!body || typeof body !== "object" || !("accessToken" in body) || typeof body.accessToken !== "string" || !("user" in body)) {
+        throw new Error("A API não retornou uma sessão válida.");
+      }
+      const authenticatedUser = body.user as Usuario;
+      setToken(body.accessToken);
+      setUsuario(authenticatedUser);
+      setPerfil(authenticatedUser.perfil);
+      setSenha("");
+      setNotice({ kind: "success", text: cadastro ? "Conta criada e sessão iniciada." : "Login realizado." });
+    } catch (error) {
+      setNotice({ kind: "error", text: error instanceof Error ? error.message : "Não foi possível iniciar a sessão." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function sair() {
+    setToken("");
+    setUsuario(null);
+    setCorrida(null);
+    setNotice({ kind: "success", text: "Sessão encerrada." });
+  }
 
   async function criar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -139,15 +182,23 @@ export default function App() {
       </section>
 
       <section className="token-panel">
-        <div className="token-heading"><span className="step-number">01</span><div><h2>Conecte sua sessão</h2><p>Use um JWT de desenvolvimento gerado pela API.</p></div></div>
-        <div className="token-controls">
-          <label className="token-field"><span>Token de acesso</span><input type="password" autoComplete="off" placeholder="Cole seu token JWT aqui" value={token} onChange={(e) => setToken(e.target.value)} /></label>
-          <div className="role-switch" role="group" aria-label="Perfil da demonstração">
-            <button className={perfil === "passageiro" ? "selected" : ""} onClick={() => setPerfil("passageiro")} type="button">Passageiro</button>
-            <button className={perfil === "motorista" ? "selected" : ""} onClick={() => setPerfil("motorista")} type="button">Motorista</button>
-          </div>
-        </div>
-        <p className="token-hint">O token permanece apenas nesta aba e é enviado diretamente à API.</p>
+        <div className="token-heading"><span className="step-number">01</span><div><h2>{usuario ? "Sua sessão" : modoAuth === "cadastro" ? "Crie sua conta" : "Entre na sua conta"}</h2><p>{usuario ? "Sua identidade e seu perfil foram confirmados pela API." : "Cadastre-se como passageiro ou motorista para usar o sistema."}</p></div></div>
+        {usuario ? <div className="auth-session"><div><strong>{usuario.nome}</strong><span>{usuario.email} · {usuario.perfil}</span></div><button className="secondary-button" disabled={busy} onClick={sair} type="button">Sair</button></div> : <>
+          <form className="auth-form" onSubmit={(event) => void autenticar(event)}>
+            {modoAuth === "cadastro" && <>
+              <label className="input-field"><span>Nome</span><input autoComplete="name" maxLength={100} minLength={2} required value={nome} onChange={(event) => setNome(event.target.value)} placeholder="Seu nome" /></label>
+              <div className="role-switch" role="group" aria-label="Tipo de conta">
+                <button className={perfil === "passageiro" ? "selected" : ""} onClick={() => setPerfil("passageiro")} type="button">Passageiro</button>
+                <button className={perfil === "motorista" ? "selected" : ""} onClick={() => setPerfil("motorista")} type="button">Motorista</button>
+              </div>
+            </>}
+            <label className="input-field"><span>Email</span><input autoComplete="email" maxLength={320} required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="voce@exemplo.com" /></label>
+            <label className="input-field"><span>Senha</span><input autoComplete={modoAuth === "cadastro" ? "new-password" : "current-password"} minLength={8} maxLength={128} required type="password" value={senha} onChange={(event) => setSenha(event.target.value)} placeholder="Mínimo de 8 caracteres" /></label>
+            <button className="primary-button" disabled={busy} type="submit">{busy ? "Aguarde…" : modoAuth === "cadastro" ? "Criar conta" : "Entrar"} <span aria-hidden="true">↗</span></button>
+          </form>
+          <button className="auth-mode-switch" onClick={() => setModoAuth(modoAuth === "cadastro" ? "login" : "cadastro")} type="button">{modoAuth === "cadastro" ? "Já tem uma conta? Entrar" : "Ainda não tem conta? Criar conta"}</button>
+        </>}
+        {!usuario && notice && <div className={`notice ${notice.kind}`} role="status"><span>{notice.kind === "success" ? "✓" : "!"}</span>{notice.text}</div>}
       </section>
 
       <div className="workspace">
@@ -171,7 +222,7 @@ export default function App() {
             <div className="progress-track">{(["SOLICITADA", "ACEITA", "EM_ANDAMENTO", "FINALIZADA"] as const).map((status, index) => { const activeIndex = ["SOLICITADA", "ACEITA", "EM_ANDAMENTO", "FINALIZADA"].indexOf(corrida.status); return <div className={`progress-step ${index <= activeIndex ? "complete" : ""} ${index === activeIndex ? "current" : ""}`} key={status}><span className="progress-dot">{index < activeIndex ? "✓" : index + 1}</span><span>{status.replace("_", " ")}</span></div>; })}</div>
             <div className="status-footer"><div><span className="summary-label">STATUS ATUAL</span><strong className="current-status">{corrida.status.replace("_", " ")}</strong></div>{perfil === "motorista" && proximoStatus && <button className="primary-button advance-button" disabled={busy || !token.trim()} onClick={() => void atualizarStatus()} type="button">Avançar para {proximoStatus.replace("_", " ")} <span aria-hidden="true">→</span></button>}</div>
           </> : <div className="empty-state"><span className="empty-icon">↗</span><strong>Sua próxima corrida começa aqui.</strong><span>Crie uma solicitação ou informe um ID para acompanhar.</span></div>}
-          {notice && <div className={`notice ${notice.kind}`} role="status"><span>{notice.kind === "success" ? "✓" : "!"}</span>{notice.text}</div>}
+          {usuario && notice && <div className={`notice ${notice.kind}`} role="status"><span>{notice.kind === "success" ? "✓" : "!"}</span>{notice.text}</div>}
           <p className="polling-note"><i /> Atualização automática a cada 5 segundos</p>
         </section>
       </div>

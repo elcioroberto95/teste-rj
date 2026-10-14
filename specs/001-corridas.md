@@ -21,7 +21,7 @@ As escolhas abaixo são interpretações propostas para lacunas do enunciado. Al
 
 ## Contrato HTTP proposto
 
-JWT assinado de teste, validado com chave pública local, algoritmo permitido explícito, expiração, emissor e audiência. Claims: `sub` e `role` (`passageiro` ou `motorista`). A UI recebe um token; não haverá emissão de tokens por senha.
+JWT assinado RS256, validado com algoritmo permitido explícito, expiração, emissor e audiência. Claims: `sub` como ID UUID do usuário persistido e `role` (`passageiro` ou `motorista`) conforme cadastro. O fluxo de cadastro/login, hashing de senha e emissão de sessão está detalhado em `specs/006-autenticacao-usuarios.md`.
 
 | Endpoint | Entrada | Sucesso | Falhas relevantes |
 | --- | --- | --- | --- |

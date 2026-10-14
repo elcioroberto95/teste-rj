@@ -15,6 +15,7 @@ Subir API, worker, MySQL, RabbitMQ, MongoDB, Redis, Prometheus e UI React em uma
 - MySQL fica saudável antes da API iniciar e executar migrations.
 - Worker aguarda API saudável (migrations aplicadas) e os serviços que consome.
 - Credenciais do Compose são valores locais de demonstração, nunca de produção.
+- O endereço principal de demonstração é `http://localhost:3000` e abre a UI de cadastro/login; a API fica em `http://localhost:3001` para chamadas diretas, enquanto a UI usa o proxy same-origin `/v1`.
 - Prometheus sobe com configuração mínima; instrumentação e scrape da aplicação serão adicionados na especificação de observabilidade.
 - UI é servida pelo Nginx e encaminha `/v1` à API na rede interna do Compose.
 
@@ -27,6 +28,7 @@ Subir API, worker, MySQL, RabbitMQ, MongoDB, Redis, Prometheus e UI React em uma
 | LOC-03 | API aplica migration e health endpoint responde sem JWT | HTTP `/v1/health` |
 | LOC-04 | Worker conecta e cria topologia RabbitMQ | logs do worker e management UI |
 | LOC-05 | UI está saudável e encaminha requisições da mesma origem à API | `docker compose ps` + fluxo no navegador |
+| LOC-06 | URL principal abre a tela de cadastro/login, sem exibir 404 da API | `http://localhost:3000` retorna a UI; `http://localhost:3000/v1/health` retorna health da API |
 
 ## Evidências da execução
 
@@ -35,6 +37,11 @@ Subir API, worker, MySQL, RabbitMQ, MongoDB, Redis, Prometheus e UI React em uma
 - O worker conectou ao broker e processou um evento de criação e três transições: MongoDB registrou quatro eventos e Redis convergiu para `FINALIZADA`, versão 4.
 - No HTTP: POST repetido com mesma chave/corpo retornou o mesmo ID; corpo diferente com a chave retornou 409; consulta por outro passageiro retornou 403; as transições válidas funcionaram e transição após finalização retornou 409.
 - O fluxo de interface visual no navegador, falhas/reentregas, concorrência simultânea e indisponibilidade dos serviços não foram exercitados nesta validação.
+- Após o ajuste de portas, `http://127.0.0.1:3000/` respondeu HTTP 200; o bundle JavaScript servido contém o campo “Token de acesso”. O health respondeu `status=ok` via proxy em `:3000/v1/health` e pela API direta em `:3001/v1/health`.
+
+## Endereços publicados
+
+Na configuração atual, `http://localhost:3000` é a entrada para avaliadores: a UI encaminha cadastro/login e chamadas `/v1` à API. A API também é publicada em `http://localhost:3001` para testes diretos. O mapeamento anterior (`UI:8080`, `API:3000`) fazia a raiz da porta 3000 retornar o 404 padrão do NestJS e foi substituído.
 
 ## Fora de escopo
 

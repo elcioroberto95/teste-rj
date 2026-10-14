@@ -1,6 +1,6 @@
 # 005 — Testes isolados de autenticação e autorização
 
-Estado: implementado; testes unitários executados com sucesso. A validação HTTP de AC01/AC02 continua pendente.
+Estado: testes unitários implementados e executados; AC01/AC02 e cadastro/login também foram exercitados via HTTP no Compose.
 
 ## Objetivo
 
@@ -25,4 +25,4 @@ Verificar o comportamento próprio do `JwtGuard` sem depender de MySQL, Redis ou
 
 ## Fora de escopo
 
-Validação HTTP ponta a ponta, autorização de propriedade de corrida e emissão de tokens por usuário; continuam sob AC01/AC02 da especificação 001 e exigem os testes integrados correspondentes.
+Persistência e fluxo de cadastro/login são especificados em `specs/006-autenticacao-usuarios.md`; testes HTTP integrados dependentes dos serviços são evidência complementar e não são substituídos por estes testes unitários do guard.

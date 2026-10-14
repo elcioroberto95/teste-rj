@@ -14,6 +14,22 @@ enum StatusCorrida {
   FINALIZADA
 }
 
+enum PerfilUsuario {
+  PASSAGEIRO
+  MOTORISTA
+}
+
+model Usuario {
+  id        String        @id @default(uuid()) @db.Char(36)
+  nome      String        @db.VarChar(100)
+  email     String        @unique @db.VarChar(320)
+  senhaHash String        @db.VarChar(255)
+  perfil    PerfilUsuario
+  criadoEm  DateTime      @default(now()) @db.DateTime(3)
+
+  @@map("usuarios")
+}
+
 model Corrida {
   id          String        @id @db.Char(36)
   passageiroId String       @db.VarChar(191)

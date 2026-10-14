@@ -74,14 +74,16 @@ services:
     environment:
       DATABASE_URL: mysql://corridas:desenvolvimento@mysql:3306/corridas
       JWT_PUBLIC_KEY_PATH: /run/keys/public.pem
+      JWT_PRIVATE_KEY_PATH: /run/keys/private.pem
       JWT_ISSUER: corridas-local
       JWT_AUDIENCE: corridas-api
       PORT: 3000
       REDIS_URL: redis://redis:6379
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3001:3000"
     volumes:
       - ./api/.dev-keys/public.pem:/run/keys/public.pem:ro
+      - ./api/.dev-keys/private.pem:/run/keys/private.pem:ro
     depends_on:
       mysql:
         condition: service_healthy
@@ -132,7 +134,7 @@ services:
       context: ./ui
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:8080:80"
+      - "127.0.0.1:3000:80"
     depends_on:
       api:
         condition: service_healthy

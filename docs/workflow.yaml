@@ -134,7 +134,7 @@ workflow:
         - id: AC13
           description: "Compose sobe os oito componentes e a UI permite demonstrar o fluxo."
           status: verified
-          evidence: "Oito containers em execução; API e dependências saudáveis, UI HTTP 200 e fluxo autenticado de criação, consulta e transições exercitado em 2026-10-14."
+          evidence: "Compose recriado em 2026-10-14: http://127.0.0.1:3000/ retorna UI HTTP 200 com cadastro/login no bundle; /v1/health pelo proxy e http://127.0.0.1:3001/v1/health retornam status=ok. API direta movida para 3001."
         - id: AC14
           description: "CI executa lint, testes e build de imagens em push e pull request."
           status: pending
@@ -156,6 +156,30 @@ workflow:
           description: "Perfil válido sem autorização na rota recebe 403."
           status: verified
           evidence: "api: npm test passou em 2026-10-14; token passageiro rejeitado em rota para motorista."
+        - id: AUTH-05
+          description: "Cadastro cria usuário passageiro persistido e emite JWT com ID/perfil correspondentes."
+          status: verified
+          evidence: "POST /v1/auth/usuarios criou conta passageiro no MySQL e emitiu token usado no fluxo HTTP de corrida em 2026-10-14."
+        - id: AUTH-06
+          description: "Cadastro cria usuário motorista persistido e emite JWT com ID/perfil correspondentes."
+          status: verified
+          evidence: "POST /v1/auth/usuarios criou conta motorista; JWT da conta autorizou ACEITA na corrida criada pelo passageiro em 2026-10-14."
+        - id: AUTH-07
+          description: "Login correto retorna JWT para a conta persistida."
+          status: verified
+          evidence: "POST /v1/auth/sessoes aceitou email normalizado e retornou novo token para o mesmo ID persistido em 2026-10-14."
+        - id: AUTH-08
+          description: "Senha incorreta retorna 401 sem revelar se email existe."
+          status: verified
+          evidence: "Login com senha incorreta e com email inexistente retornou HTTP 401 em 2026-10-14."
+        - id: AUTH-09
+          description: "Email duplicado retorna 409 e senha é armazenada somente como hash."
+          status: verified
+          evidence: "Cadastro duplicado retornou 409; teste PasswordHasher passou e consulta MySQL confirmou prefixo scrypt$ sem revelar o hash em 2026-10-14."
+        - id: AUTH-10
+          description: "UI permite cadastro, login, logout e uso de ambos os perfis."
+          status: pending
+          evidence: null
 
     - id: operations
       name: Operação e observabilidade
