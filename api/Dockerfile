@@ -1,5 +1,6 @@
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
+ENV DATABASE_URL=mysql://corridas:desenvolvimento@localhost:3306/corridas
 COPY package*.json ./
 RUN npm ci
 COPY prisma ./prisma

@@ -2,7 +2,7 @@
 
 Serviço de corridas com API NestJS, worker de eventos e interface React.
 
-**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. Cinco testes unitários de domínio passam. O Compose define os oito serviços e valida sintaxe, mas o build das imagens e o fluxo integrado ainda aguardam daemon Docker.
+**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. Cinco testes unitários de domínio e lint dos dois pacotes passam. GitHub Actions está configurado; ainda não foi executado remotamente. O Compose define os oito serviços e valida sintaxe, mas o build das imagens e o fluxo integrado aguardam daemon Docker.
 
 ## Desenvolvimento
 

@@ -79,6 +79,10 @@ workflow:
           description: "Testes unitários cobrem criação, fluxo válido, versão, motorista e transições inválidas do domínio."
           status: verified
           evidence: "api: npm test passou; 1 suíte e 5 testes em 2026-10-14."
+        - id: FND-005
+          description: "ESLint configurado e lint local passa nos pacotes API e UI."
+          status: verified
+          evidence: "api e ui: npm run lint passou em 2026-10-14."
         - id: AC01
           description: "JWT ausente, inválido ou expirado retorna 401; token válido autentica."
           status: pending

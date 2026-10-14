@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { criarCorrida } from "../domain/corrida.js";
 import type { Corrida } from "../domain/corrida.js";
-import { ChaveIdempotenciaConflitanteError } from "./errors.js";
 import type { CorridaRepository } from "./corrida.repository.js";
 
 export interface CriarCorridaCommand {
