@@ -11,7 +11,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 ## 1. Fundação — obrigatória
 
 - [x] Criar módulo inicial da API, gerar Prisma Client e compilar (evidência no `docs/workflow.yaml`).
-- [ ] Preparar API NestJS, worker, React, configuração local e Compose com os oito componentes; validar saúde dos serviços. Implementação dos oito serviços concluída; build de imagem e smoke test pendentes.
+- [x] Preparar API NestJS, worker, React, configuração local e Compose com os oito componentes; validar saúde dos serviços. `docker-compose up -d --build`, saúde dos serviços, migration e smoke test HTTP passaram; evidências em `specs/002-ambiente-local.md`.
 - [ ] Implementar entidade Corrida e transições; testar estados inválidos (AC03–04).
 - [ ] Implementar migrations MySQL, criação e idempotência transacional (AC05–06).
 - [ ] Implementar JWT, autorização e consulta por proprietário (AC01–02).
@@ -20,7 +20,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Falta validação integrada.
 - [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Falta validação integrada.
 - [x] Adicionar testes unitários de criação e transições do domínio; integração HTTP e concorrência no banco pendentes.
-- [ ] Implementar UI mínima e demonstrar fluxo completo (AC13). Código React implementado; validação integrada pendente.
+- [x] Implementar UI mínima e demonstrar fluxo básico (AC13). UI e proxy `/v1/health` responderam HTTP 200; API integrada exercitada. Fluxo visual manual ainda pendente.
 - [ ] Configurar CI para lint, testes e build de imagens; validar execução (AC14). Workflow criado; falta execução no GitHub Actions.
 
 ## 2. Operação — peso alto
@@ -47,3 +47,8 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [ ] Declaração de IA com exemplo real de sugestão rejeitada/corrigida.
 - [ ] Revisão de segredos e identificação explícita de chaves/tokens de teste.
 - [ ] Preparar e gravar vídeo de até 10 minutos com demonstração, decisão e diagnóstico.
+
+## Verificação isolada de autenticação
+
+- [x] Executar os testes isolados `api/test/jwt.guard.spec.ts`; passaram junto aos testes de domínio (15 testes, 2 suítes).
+- [x] Validar AC01/AC02: testes JwtGuard e fluxo HTTP com consulta do proprietário e rejeição 403 para outro passageiro.

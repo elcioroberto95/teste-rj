@@ -2,7 +2,7 @@
 
 Serviço de corridas com API NestJS, worker de eventos e interface React.
 
-**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. Cinco testes unitários de domínio e lint dos dois pacotes passam. GitHub Actions está configurado; ainda não foi executado remotamente. O Compose define os oito serviços e valida sintaxe, mas o build das imagens e o fluxo integrado aguardam daemon Docker.
+**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. Testes unitários, lint e builds passam. Em 2026-10-14, os oito serviços foram construídos e iniciados pelo Compose; migration, healthchecks, proxy da UI, autorização, idempotência e projeção de eventos foram exercitados. Concorrência simultânea, reentrega após falha, observabilidade completa, Kubernetes e execução remota do GitHub Actions seguem pendentes.
 
 ## Desenvolvimento
 
@@ -63,9 +63,9 @@ docker compose up --build -d
 docker compose ps
 ```
 
-O worker aguarda a API e os serviços necessários ficarem saudáveis. Acesse a UI em `http://localhost:8080`; o proxy encaminha `/v1` para a API. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. Prometheus inicia com scrape de si próprio; métricas da API/worker ainda não foram instrumentadas.
+O worker aguarda a API e os serviços necessários ficarem saudáveis. Acesse a UI em `http://localhost:8080`; o proxy encaminha `/v1` para a API. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. Prometheus inicia com scrape de si próprio; métricas da API/worker ainda não foram instrumentadas. A execução atual do Compose foi validada; consulte `specs/002-ambiente-local.md` para evidências e limites do smoke test.
 
-`POST /v1/corridas` cria com JWT RS256 de perfil `passageiro` e cabeçalho `Idempotency-Key`; `GET /v1/corridas/:id` consulta a corrida do passageiro; `PATCH /v1/corridas/:id/status` aceita, inicia ou finaliza como motorista. Gere tokens de desenvolvimento com `npm run token:dev -- passageiro passageiro-demo` ou `npm run token:dev -- motorista motorista-demo`. As chaves ficam em `api/.dev-keys/`, ignoradas pelo Git, e são apenas para desenvolvimento. O Compose inicial está disponível acima; ainda falta validar a subida dos containers neste ambiente.
+`POST /v1/corridas` cria com JWT RS256 de perfil `passageiro` e cabeçalho `Idempotency-Key`; `GET /v1/corridas/:id` consulta a corrida do passageiro; `PATCH /v1/corridas/:id/status` aceita, inicia ou finaliza como motorista. Gere tokens de desenvolvimento com `npm run token:dev -- passageiro passageiro-demo` ou `npm run token:dev -- motorista motorista-demo`. As chaves ficam em `api/.dev-keys/`, ignoradas pelo Git, e são apenas para desenvolvimento.
 
 ## Uso de IA
 

@@ -3,6 +3,7 @@ WORKDIR /app
 ENV DATABASE_URL=mysql://corridas:desenvolvimento@localhost:3306/corridas
 COPY package*.json ./
 RUN npm ci
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY prisma ./prisma
 COPY prisma.config.ts nest-cli.json tsconfig.json ./
 COPY src ./src
@@ -11,6 +12,7 @@ RUN npm run db:generate && npm run build
 FROM node:24-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist

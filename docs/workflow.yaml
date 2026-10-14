@@ -56,10 +56,10 @@ workflow:
       estimate_minutes: 240
       blockers:
         - id: B-002
-          status: open
-          description: "Daemon Docker local não está acessível; Compose, migration, healthchecks e integração com os serviços ainda não podem ser executados."
+          status: resolved
+          description: "A primeira subida do Compose revelou healthchecks prematuros no MySQL e RabbitMQ, além da dependência OpenSSL ausente na imagem da API."
           owner: environment
-          resolution: "Iniciar Docker Desktop e executar a migration e as verificações de integração ao retomar."
+          resolution: "Corrigidos healthchecks para validar MySQL via TCP e AMQP via porta, instalado OpenSSL nos estágios da API; Compose, migration e fluxo HTTP/projeção validados em 2026-10-14."
           blocks:
             - foundation
       acceptance_criteria:
@@ -69,8 +69,8 @@ workflow:
           evidence: "api: npm run db:generate e npm run build executados em 2026-10-14; chaves e JWT local de desenvolvimento gerados."
         - id: FND-002
           description: "Compose define oito serviços com dependências por healthcheck; API expõe health endpoint público."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "docker-compose config --quiet e docker-compose ps em 2026-10-14: oito serviços em execução; API, MySQL, RabbitMQ, MongoDB, Redis e UI saudáveis; /v1/health retornou status=ok."
         - id: FND-003
           description: "UI React compila para produção."
           status: verified
@@ -85,28 +85,28 @@ workflow:
           evidence: "api e ui: npm run lint passou em 2026-10-14."
         - id: AC01
           description: "JWT ausente, inválido ou expirado retorna 401; token válido autentica."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "API no Compose em 2026-10-14: criação autenticada, leitura, alteração de status e rejeição de acesso de outro passageiro; testes JwtGuard cobrem token ausente/inválido/expirado."
         - id: AC02
           description: "Perfis e propriedade são respeitados; acessos proibidos retornam 403."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "API no Compose em 2026-10-14: GET do proprietário retornou a corrida e GET com outro passageiro retornou 403; teste JwtGuard cobre perfil sem permissão (403)."
         - id: AC03
           description: "Criação e transições válidas mantêm o ID e incrementam a versão."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "API no Compose em 2026-10-14: POST idempotente manteve o ID; PATCH retornou ACEITA, EM_ANDAMENTO e FINALIZADA; Redis convergiu para versao=4."
         - id: AC04
           description: "Transições inválidas e alterações após finalização retornam 409."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "API no Compose em 2026-10-14: tentativa de transição após FINALIZADA retornou HTTP 409."
         - id: AC05
           description: "POST repetido ou concorrente com mesma chave e corpo não duplica corrida nem evento."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "Dois POSTs sequenciais com mesma chave/corpo retornaram o mesmo ID; MongoDB registrou quatro eventos da corrida (criação + três transições) em 2026-10-14. Concorrência simultânea segue sem ensaio."
         - id: AC06
           description: "Reutilizar chave de idempotência com outro corpo retorna 409."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "POST com chave já usada e corpo diferente retornou HTTP 409 na API do Compose em 2026-10-14."
         - id: AC07
           description: "Evento duplicado produz um registro de auditoria e converge o cache."
           status: pending
@@ -133,12 +133,29 @@ workflow:
           evidence: null
         - id: AC13
           description: "Compose sobe os oito componentes e a UI permite demonstrar o fluxo."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "Oito containers em execução; API e dependências saudáveis, UI HTTP 200 e fluxo autenticado de criação, consulta e transições exercitado em 2026-10-14."
         - id: AC14
           description: "CI executa lint, testes e build de imagens em push e pull request."
           status: pending
           evidence: null
+
+        - id: AUTH-01
+          description: "JwtGuard retorna 401 para ausência, invalidade e expiração de token e para claims inválidas."
+          status: verified
+          evidence: "api: npm test passou em 2026-10-14; api/test/jwt.guard.spec.ts cobre token ausente, malformado, expirado, claims inválidas, issuer e audience."
+        - id: AUTH-02
+          description: "JwtGuard valida RS256, issuer e audience e instala identidade a partir das claims."
+          status: verified
+          evidence: "api: npm test passou em 2026-10-14 com token RS256 válido e rejeição de issuer/audience divergentes."
+        - id: AUTH-03
+          description: "Rota pública ignora autenticação e rota protegida rejeita ausência de token."
+          status: verified
+          evidence: "api: npm test passou em 2026-10-14; testes unitários do JwtGuard."
+        - id: AUTH-04
+          description: "Perfil válido sem autorização na rota recebe 403."
+          status: verified
+          evidence: "api: npm test passou em 2026-10-14; token passageiro rejeitado em rota para motorista."
 
     - id: operations
       name: Operação e observabilidade
