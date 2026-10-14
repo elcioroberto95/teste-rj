@@ -1,0 +1,208 @@
+workflow:
+  name: corridas-sddd
+  version: 1
+  updated_at: "2026-10-14"
+  methodology: "Spec-Driven Development + Domain-Driven Design"
+  source_of_truth: "docs/workflow.yaml"
+  status_values:
+    - not_started
+    - in_progress
+    - blocked
+    - done
+  criterion_status_values:
+    - pending
+    - blocked
+    - verified
+  blocker_status_values:
+    - open
+    - resolved
+  current_stage: specification
+
+  stages:
+    - id: specification
+      name: Especificação e preparação
+      status: in_progress
+      priority: required
+      depends_on: []
+      estimate_minutes: 30
+      blockers:
+        - id: B-001
+          status: open
+          description: "Revisar as interpretações da especificação e decidir ORM, cliente RabbitMQ e ferramentas de teste."
+          owner: candidate
+          resolution: "Revisar specs/001-corridas.md e registrar escolhas e trade-offs em DECISIONS.md."
+          blocks:
+            - foundation
+      acceptance_criteria:
+        - id: SPEC-001
+          description: "Especificação inicial cobre regras, contratos HTTP, eventos e critérios observáveis."
+          status: verified
+          evidence: "specs/001-corridas.md"
+        - id: SPEC-002
+          description: "ORM, cliente RabbitMQ e ferramentas de teste escolhidos com justificativa."
+          status: pending
+          evidence: null
+        - id: SPEC-003
+          description: "Ambiguidades da especificação inicial revisadas antes da implementação."
+          status: pending
+          evidence: null
+
+    - id: foundation
+      name: Fundação funcional
+      status: blocked
+      priority: required
+      depends_on:
+        - specification
+      estimate_minutes: 240
+      blockers: []
+      acceptance_criteria:
+        - id: AC01
+          description: "JWT ausente, inválido ou expirado retorna 401; token válido autentica."
+          status: pending
+          evidence: null
+        - id: AC02
+          description: "Perfis e propriedade são respeitados; acessos proibidos retornam 403."
+          status: pending
+          evidence: null
+        - id: AC03
+          description: "Criação e transições válidas mantêm o ID e incrementam a versão."
+          status: pending
+          evidence: null
+        - id: AC04
+          description: "Transições inválidas e alterações após finalização retornam 409."
+          status: pending
+          evidence: null
+        - id: AC05
+          description: "POST repetido ou concorrente com mesma chave e corpo não duplica corrida nem evento."
+          status: pending
+          evidence: null
+        - id: AC06
+          description: "Reutilizar chave de idempotência com outro corpo retorna 409."
+          status: pending
+          evidence: null
+        - id: AC07
+          description: "Evento duplicado produz um registro de auditoria e converge o cache."
+          status: pending
+          evidence: null
+        - id: AC08
+          description: "Reentrega recupera falha parcial entre gravação no MongoDB e atualização no Redis."
+          status: pending
+          evidence: null
+        - id: AC09
+          description: "Eventos antigos não regridem cache e leitura não serve versão atrasada."
+          status: pending
+          evidence: null
+        - id: AC10
+          description: "Broker indisponível não perde evento confirmado; projeção converge após recuperação."
+          status: pending
+          evidence: null
+        - id: AC11
+          description: "Consulta de corrida funciona via MySQL quando Redis está indisponível."
+          status: pending
+          evidence: null
+        - id: AC12
+          description: "Duas aceitações concorrentes resultam em apenas um motorista vencedor."
+          status: pending
+          evidence: null
+        - id: AC13
+          description: "Compose sobe os oito componentes e a UI permite demonstrar o fluxo."
+          status: pending
+          evidence: null
+        - id: AC14
+          description: "CI executa lint, testes e build de imagens em push e pull request."
+          status: pending
+          evidence: null
+
+    - id: operations
+      name: Operação e observabilidade
+      status: not_started
+      priority: high
+      depends_on:
+        - foundation
+      estimate_minutes: 120
+      blockers: []
+      acceptance_criteria:
+        - id: OPS-001
+          description: "Logs JSON propagam correlation_id entre API, broker e worker."
+          status: pending
+          evidence: null
+        - id: OPS-002
+          description: "API e worker expõem métricas Prometheus de requisições, latência, erros e fila."
+          status: pending
+          evidence: null
+        - id: OPS-003
+          description: "Um trace observado percorre API, RabbitMQ e worker."
+          status: pending
+          evidence: null
+        - id: OPS-004
+          description: "Dois alertas justificados aparecem no Prometheus e os arquivos de regras correspondem."
+          status: pending
+          evidence: null
+        - id: OPS-005
+          description: "Script k6 e relatório registram cenário e medições reais."
+          status: pending
+          evidence: null
+
+    - id: kubernetes
+      name: Implantação Kubernetes
+      status: not_started
+      priority: medium
+      depends_on:
+        - operations
+      estimate_minutes: null
+      blockers: []
+      acceptance_criteria:
+        - id: K8S-001
+          description: "Manifestos iniciam a aplicação em cluster local."
+          status: pending
+          evidence: null
+        - id: K8S-002
+          description: "Deployments têm probes e requests/limits justificados."
+          status: pending
+          evidence: null
+        - id: K8S-003
+          description: "Configuração usa ConfigMap/Secret sem credenciais reais versionadas."
+          status: pending
+        - id: K8S-004
+          description: "Bônus KEDA demonstra escala do worker pelo tamanho da fila durante carga."
+          status: pending
+          optional: true
+          evidence: null
+
+    - id: delivery
+      name: Revisão e entrega
+      status: not_started
+      priority: required
+      depends_on:
+        - foundation
+      estimate_minutes: 60
+      blockers: []
+      acceptance_criteria:
+        - id: DEL-001
+          description: "README permite reproduzir e validar o que foi efetivamente executado."
+          status: pending
+          evidence: null
+        - id: DEL-002
+          description: "DECISIONS, DIARIO e LIMITES refletem decisões e resultados reais."
+          status: pending
+          evidence: null
+        - id: DEL-003
+          description: "README declara o uso de IA e inclui exemplo real de sugestão corrigida ou rejeitada."
+          status: pending
+          evidence: null
+        - id: DEL-004
+          description: "Vídeo de até 10 minutos demonstra o sistema, uma decisão e um diagnóstico."
+          status: pending
+          evidence: null
+
+  rules:
+    stage_done_requires: "Todos os critérios obrigatórios verified e nenhum blocker open."
+    stage_blocked_when: "Há blocker open ou dependência não concluída impede o início."
+    criterion_verified_requires: "Evidência reproduzível, como teste executado, comando, trace ou arquivo revisado."
+    blocker_fields_required:
+      - id
+      - status
+      - description
+      - owner
+      - resolution
+    update_policy: "Atualizar este YAML durante o trabalho; registrar mudanças relevantes no DIARIO.md."
