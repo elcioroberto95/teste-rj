@@ -10,6 +10,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 
 ## 1. Fundação — obrigatória
 
+- [x] Criar módulo inicial da API, gerar Prisma Client e compilar (evidência no `docs/workflow.yaml`).
 - [ ] Preparar API NestJS, worker, React, configuração local e Compose com os oito componentes; validar saúde dos serviços.
 - [ ] Implementar entidade Corrida e transições; testar estados inválidos (AC03–04).
 - [ ] Implementar migrations MySQL, criação e idempotência transacional (AC05–06).

@@ -16,21 +16,21 @@ workflow:
   blocker_status_values:
     - open
     - resolved
-  current_stage: specification
+  current_stage: foundation
 
   stages:
     - id: specification
       name: Especificação e preparação
-      status: in_progress
+      status: done
       priority: required
       depends_on: []
       estimate_minutes: 30
       blockers:
         - id: B-001
-          status: open
+          status: resolved
           description: "Revisar as interpretações da especificação e decidir ORM, cliente RabbitMQ e ferramentas de teste."
           owner: candidate
-          resolution: "Revisar specs/001-corridas.md e registrar escolhas e trade-offs em DECISIONS.md."
+          resolution: "Revisado em 2026-10-14: decisões de Prisma, amqplib e Jest registradas; regra de consistência Redis esclarecida."
           blocks:
             - foundation
       acceptance_criteria:
@@ -40,22 +40,33 @@ workflow:
           evidence: "specs/001-corridas.md"
         - id: SPEC-002
           description: "ORM, cliente RabbitMQ e ferramentas de teste escolhidos com justificativa."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "specs/001-corridas.md; DECISIONS.md"
         - id: SPEC-003
           description: "Ambiguidades da especificação inicial revisadas antes da implementação."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "Revisão da especificação e DECISIONS.md em 2026-10-14"
 
     - id: foundation
       name: Fundação funcional
-      status: blocked
+      status: in_progress
       priority: required
       depends_on:
         - specification
       estimate_minutes: 240
-      blockers: []
+      blockers:
+        - id: B-002
+          status: open
+          description: "Daemon Docker local não está acessível; integração com MySQL e concorrência ainda não podem ser validadas."
+          owner: environment
+          resolution: "Iniciar Docker Desktop e executar a migration e as verificações de integração ao retomar."
+          blocks:
+            - foundation
       acceptance_criteria:
+        - id: FND-001
+          description: "Cliente Prisma é gerado; API NestJS com rotas iniciais compila."
+          status: verified
+          evidence: "api: npm run db:generate e npm run build executados em 2026-10-14; chaves e JWT local de desenvolvimento gerados."
         - id: AC01
           description: "JWT ausente, inválido ou expirado retorna 401; token válido autentica."
           status: pending

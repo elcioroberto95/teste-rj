@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum StatusCorrida {
+  SOLICITADA
+  ACEITA
+  EM_ANDAMENTO
+  FINALIZADA
+}
+
+model Corrida {
+  id          String        @id @db.Char(36)
+  passageiroId String       @db.VarChar(191)
+  motoristaId String?      @db.VarChar(191)
+  origem      String        @db.VarChar(500)
+  destino     String        @db.VarChar(500)
+  status      StatusCorrida @default(SOLICITADA)
+  versao      Int           @default(1)
+  criadaEm    DateTime      @default(now()) @db.DateTime(3)
+  atualizadaEm DateTime     @updatedAt @db.DateTime(3)
+
+  @@index([passageiroId, criadaEm])
+  @@map("corridas")
+}
+
+model ChaveIdempotencia {
+  id             String   @id @default(uuid()) @db.Char(36)
+  passageiroId   String   @db.VarChar(191)
+  chave          String   @db.VarChar(255)
+  hashRequisicao String   @db.Char(64)
+  resposta       Json
+  criadaEm       DateTime @default(now()) @db.DateTime(3)
+
+  @@unique([passageiroId, chave])
+  @@map("chaves_idempotencia")
+}
+
+model EventoOutbox {
+  id               String   @id @db.Char(36)
+  tipo             String   @db.VarChar(100)
+  versaoSchema     Int
+  ocorridoEm       DateTime @db.DateTime(3)
+  correlationId    String   @db.VarChar(100)
+  corridaId        String   @db.Char(36)
+  versaoAgregado   Int
+  payload          Json
+  publicadoEm     DateTime? @db.DateTime(3)
+  criadoEm         DateTime @default(now()) @db.DateTime(3)
+
+  @@index([publicadoEm, criadoEm])
+  @@map("eventos_outbox")
+}

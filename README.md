@@ -2,7 +2,7 @@
 
 Serviço de corridas com API NestJS, worker de eventos e interface React.
 
-**Estado atual:** planejamento e especificação. A aplicação ainda não foi implementada; não há comandos de execução disponíveis.
+**Estado atual:** API NestJS inicial implementada com POST, GET e PATCH de corridas. O cliente Prisma foi gerado e a API compila. Aplicação da migration e execução HTTP aguardam MySQL local; worker, Redis, RabbitMQ, UI, Compose e CI ainda estão pendentes.
 
 ## Desenvolvimento
 
@@ -37,6 +37,22 @@ A API e o worker serão processos separados no mesmo repositório. O domínio te
 - [Decisões e alternativas](DECISIONS.md)
 - [Diário de desenvolvimento](DIARIO.md)
 - [Limites e riscos conhecidos](LIMITES.md)
+
+## API em desenvolvimento
+
+Requer Node.js 24 e MySQL acessível em `localhost:3306`. No PowerShell, a partir da raiz:
+
+```powershell
+Set-Location api
+Copy-Item .env.example .env
+npm install
+npm run keys:dev
+npm run db:generate
+npm run db:migrate:deploy
+npm run start:dev
+```
+
+`POST /v1/corridas` cria com JWT RS256 de perfil `passageiro` e cabeçalho `Idempotency-Key`; `GET /v1/corridas/:id` consulta a corrida do passageiro; `PATCH /v1/corridas/:id/status` aceita, inicia ou finaliza como motorista. Gere tokens de desenvolvimento com `npm run token:dev -- passageiro passageiro-demo` ou `npm run token:dev -- motorista motorista-demo`. As chaves ficam em `api/.dev-keys/`, ignoradas pelo Git, e são apenas para desenvolvimento. A aplicação ainda não dispõe de Docker Compose; MySQL precisa ser iniciado separadamente.
 
 ## Uso de IA
 

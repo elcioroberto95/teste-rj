@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+api/src/generated/
+api/.dev-keys/
+api/prisma/migrations/*/migration_lock.toml.tmp

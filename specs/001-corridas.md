@@ -1,6 +1,6 @@
 # 001 — Fundação do serviço de corridas
 
-Estado: especificação inicial; implementação pendente.
+Estado: revisada para iniciar a implementação; critérios de aceite ainda pendentes de execução.
 
 ## Objetivo
 
@@ -43,9 +43,18 @@ Auditoria MongoDB tem índice único por `event_id`. Cache Redis só aceita uma 
 
 ## Leitura e consistência
 
-Consultar propriedade e versão atual no MySQL antes de servir uma projeção Redis; usar o cache somente se a versão coincidir. Em cache ausente, inválido ou Redis indisponível, responder com MySQL. Qualquer preenchimento do cache pela API também respeita comparação atômica de versão.
+Objetivo: GET usa cache-aside: em cache hit, retorna a projeção Redis; em miss ou indisponibilidade do Redis, lê MySQL e tenta preencher o cache de forma atômica por versão. O cache também pode ser preenchido pelo worker a partir dos eventos. A autorização por proprietário deve ser aplicada sem confiar em identidade enviada pelo cliente.
 
-Essa escolha evita responder com status anterior logo após um PATCH, mas mantém uma consulta MySQL por leitura e reduz o benefício do cache. Registrar e medir esse trade-off; não prometer eliminação de consultas ao banco.
+Estado atual: o GET inicial lê MySQL diretamente porque Redis e worker ainda não foram integrados. Após essa integração, a autorização por proprietário precisa permanecer correta também no caminho de cache.
+
+Depois de um PATCH, a resposta usa o estado confirmado no MySQL. Com cache ativo, o GET pode refletir o estado anterior até o worker processar o evento; essa janela é a consistência eventual esperada. Eventos atrasados não podem regredir a versão no Redis. Redis indisponível mantém a consulta via MySQL.
+
+## Escolhas de implementação para a primeira fatia
+
+- Persistência: Prisma ORM 7.10, com adapter MariaDB para MySQL, migrations versionadas e transação interativa para gravar corrida, idempotency key e outbox atomicamente. Prisma 8 ainda não oferece MySQL na data desta escolha; rever ao atualizar a major. [Documentação Prisma ORM 7 para MySQL](https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/mysql).
+- Mensageria: `amqplib` com publisher confirms e ack manual, para tornar visíveis as garantias de publicação e consumo.
+- Testes: Jest para domínio e integração NestJS; testes que dependem de MySQL/broker devem usar serviços reais de teste, não mocks para simular garantias transacionais.
+- Primeira fatia implementada: `POST /corridas` autenticado, criação no MySQL, idempotência por `(passageiro, chave)` e registro do evento na outbox. A API inicial também oferece GET e PATCH; GET usa MySQL até a projeção Redis existir. Publicação e consumo RabbitMQ ainda estão pendentes; a outbox preserva os eventos até o publicador ser implementado.
 
 ## UI mínima
 

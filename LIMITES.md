@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-Apenas o planejamento está implementado. API, worker, UI, Compose, CI, testes, observabilidade e Kubernetes permanecem pendentes. Não há evidências de execução da aplicação.
+API NestJS inicial com JWT RS256, POST idempotente, GET por proprietário e PATCH com transições/controle de versão; migration de corrida, idempotência e outbox adicionada. Prisma 7.10.0 gerou o cliente e o build da API passou. Chaves RSA e emissão de JWT de desenvolvimento foram geradas localmente. Worker, Redis, RabbitMQ, UI, Compose, CI, testes, observabilidade e Kubernetes permanecem pendentes. A migration não foi aplicada e não há validação HTTP ou integração porque o daemon Docker local não está acessível.
 
 ## Escopo deliberadamente excluído
 
