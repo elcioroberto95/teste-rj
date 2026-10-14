@@ -37,7 +37,7 @@ Proposta: persistir mudança e registro de outbox na mesma transação MySQL. Um
 
 Eventos: `corrida.criada` e `corrida.status_alterado`. Envelope mínimo: `event_id`, `event_type`, `schema_version`, `occurred_at`, `correlation_id`, `corrida_id`, `aggregate_version` e `payload`. Propagar contexto de trace nos headers quando a instrumentação estiver implementada.
 
-Topologia proposta: exchange durável `corridas` do tipo topic, fila durável `corridas.projecoes` com bindings para os dois eventos e fila de mensagens mortas. Usar ack manual após efeitos concluídos. Definir mecanismo e limite de retries na tarefa de mensageria, evitando requeue infinito.
+Topologia: exchange durável `corridas` do tipo topic, fila durável `corridas.projecoes` com bindings para os dois eventos, retry via exchange/fila TTL de 5 segundos e DLQ `corridas.dlq`. O worker repassa falhas por até três tentativas, com ack manual após publicar a reentrega confirmada; depois envia à DLQ. Se publicar retry/DLQ falhar, faz nack com requeue para preservar a mensagem.
 
 Auditoria MongoDB tem índice único por `event_id`. Cache Redis só aceita uma versão mais nova que a armazenada, em operação atômica. Uma mensagem já registrada no MongoDB ainda precisa tentar atualizar o cache: deduplicação da auditoria não pode pular a recuperação de uma falha parcial. Ack somente após os dois efeitos; reentrega converge mesmo se houver crash entre eles.
 
@@ -45,14 +45,14 @@ Auditoria MongoDB tem índice único por `event_id`. Cache Redis só aceita uma 
 
 Objetivo: GET usa cache-aside: em cache hit, retorna a projeção Redis; em miss ou indisponibilidade do Redis, lê MySQL e tenta preencher o cache de forma atômica por versão. O cache também pode ser preenchido pelo worker a partir dos eventos. A autorização por proprietário deve ser aplicada sem confiar em identidade enviada pelo cliente.
 
-Estado atual: o GET inicial lê MySQL diretamente porque Redis e worker ainda não foram integrados. Após essa integração, a autorização por proprietário precisa permanecer correta também no caminho de cache.
+Estado atual: GET consulta Redis primeiro; em cache miss, dado inválido ou indisponibilidade, lê MySQL e tenta preencher Redis atomicamente por versão. A autorização por proprietário é aplicada nos dois caminhos. A consistência eventual após uma mudança de estado permanece: um GET pode retornar a projeção anterior até o worker processar o evento.
 
 Depois de um PATCH, a resposta usa o estado confirmado no MySQL. Com cache ativo, o GET pode refletir o estado anterior até o worker processar o evento; essa janela é a consistência eventual esperada. Eventos atrasados não podem regredir a versão no Redis. Redis indisponível mantém a consulta via MySQL.
 
 ## Escolhas de implementação para a primeira fatia
 
 - Persistência: Prisma ORM 7.10, com adapter MariaDB para MySQL, migrations versionadas e transação interativa para gravar corrida, idempotency key e outbox atomicamente. Prisma 8 ainda não oferece MySQL na data desta escolha; rever ao atualizar a major. [Documentação Prisma ORM 7 para MySQL](https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/mysql).
-- Mensageria: `amqplib` com publisher confirms e ack manual, para tornar visíveis as garantias de publicação e consumo.
+- Mensageria: `amqplib` com publisher confirms e ack manual; retry limitado a três tentativas e DLQ.
 - Testes: Jest para domínio e integração NestJS; testes que dependem de MySQL/broker devem usar serviços reais de teste, não mocks para simular garantias transacionais.
 - Primeira fatia implementada: `POST /corridas` autenticado, criação no MySQL, idempotência por `(passageiro, chave)` e registro do evento na outbox. A API inicial também oferece GET e PATCH; GET usa MySQL até a projeção Redis existir. Publicação e consumo RabbitMQ ainda estão pendentes; a outbox preserva os eventos até o publicador ser implementado.
 
@@ -72,7 +72,7 @@ Entrada de token, formulário para criar corrida, lista local dos IDs criados ne
 | AC06 | Reutilizar chave com corpo diferente retorna 409 | Integração HTTP |
 | AC07 | Evento entregue duas vezes resulta em um histórico e cache na versão correta | Integração worker |
 | AC08 | Falha entre MongoDB e Redis permite recuperação na reentrega | Integração worker com falha induzida |
-| AC09 | Evento antigo não regride cache; cache atrasado não regride resposta HTTP | Integração |
+| AC09 | Evento antigo não regride o cache; cache miss preenche Redis somente se não houver versão mais nova | Integração |
 | AC10 | Broker indisponível não perde evento de corrida confirmada; após recuperação, a projeção converge | Integração outbox/broker |
 | AC11 | Redis indisponível mantém consulta via MySQL | Integração HTTP |
 | AC12 | Dois motoristas aceitando simultaneamente produzem somente um vencedor | Integração concorrente |

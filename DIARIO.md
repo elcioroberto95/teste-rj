@@ -10,5 +10,7 @@
 - Criamos o módulo NestJS, autenticação JWT RS256, domínio inicial da Corrida, contrato de repositório Prisma, criação idempotente e gravação transacional na outbox; adicionamos schema e migration inicial.
 - Prisma 7.10.0 gerou o cliente e `npm run build` compilou a API. Nenhum teste foi adicionado ou executado. Docker indisponível impede aplicar a migration e validar o comportamento no MySQL.
 - Implementamos GET por proprietário e PATCH com transições sequenciais, associação do primeiro motorista e atualização otimista por versão, gravando evento na outbox na mesma transação. O build NestJS passou após essas rotas; a garantia concorrente ainda não foi executada contra MySQL.
+- Implementamos relay de outbox com confirmação do RabbitMQ, worker separado, histórico de eventos com deduplicação MongoDB, cache Redis com guarda atômica de versão, retries limitados e DLQ. Instalamos `amqplib`, `mongodb` e `redis`; `npm run build` compilou API e worker. A integração ainda precisa ser exercitada com os serviços locais.
+- GET agora segue cache-aside: Redis primeiro, MySQL no miss ou indisponibilidade, checagem de proprietário em ambos os caminhos e preenchimento atômico do cache sem regressão de versão. Redis indisponível não bloqueia o bootstrap da API. Revisamos AC09 para remover a contradição com a consistência eventual documentada; `npm run build` compilou a alteração, mas a integração ainda depende dos serviços locais.
 
 Tempo consumido: ainda não medido. Registrar o tempo real das próximas sessões; não estimar retroativamente como se fosse medição.

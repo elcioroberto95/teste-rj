@@ -100,7 +100,7 @@ workflow:
           status: pending
           evidence: null
         - id: AC09
-          description: "Eventos antigos não regridem cache e leitura não serve versão atrasada."
+          description: "Evento antigo e cache miss não regridem a versão armazenada no Redis; GET usa fallback MySQL."
           status: pending
           evidence: null
         - id: AC10

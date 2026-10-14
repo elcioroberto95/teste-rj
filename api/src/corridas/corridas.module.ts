@@ -5,11 +5,15 @@ import { ConsultarCorridaUseCase } from "./application/consultar-corrida.use-cas
 import { AlterarStatusUseCase } from "./application/alterar-status.use-case.js";
 import { PrismaCorridaRepository } from "./infrastructure/prisma-corrida.repository.js";
 import { CorridasController } from "./presentation/corridas.controller.js";
+import { RedisCorridaCache } from "./infrastructure/redis-corrida-cache.js";
+import { CORRIDA_CACHE } from "./application/corrida-cache.js";
 
 @Module({
   controllers: [CorridasController],
   providers: [
     PrismaCorridaRepository,
+    RedisCorridaCache,
+    { provide: CORRIDA_CACHE, useExisting: RedisCorridaCache },
     { provide: CORRIDA_REPOSITORY, useExisting: PrismaCorridaRepository },
     {
       provide: CriarCorridaUseCase,
@@ -18,8 +22,9 @@ import { CorridasController } from "./presentation/corridas.controller.js";
     },
     {
       provide: ConsultarCorridaUseCase,
-      useFactory: (repository: PrismaCorridaRepository) => new ConsultarCorridaUseCase(repository),
-      inject: [CORRIDA_REPOSITORY],
+      useFactory: (repository: PrismaCorridaRepository, cache: RedisCorridaCache) =>
+        new ConsultarCorridaUseCase(repository, cache),
+      inject: [CORRIDA_REPOSITORY, CORRIDA_CACHE],
     },
     {
       provide: AlterarStatusUseCase,

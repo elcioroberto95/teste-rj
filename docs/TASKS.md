@@ -6,7 +6,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 
 - [x] Criar workflow SDDD e especificação inicial.
 - [ ] Revisar regras propostas, contratos e orçamento antes da primeira fatia.
-- [ ] Registrar escolhas de ORM, cliente RabbitMQ e ferramentas de testes com justificativa curta.
+- [x] Registrar escolhas de ORM, cliente RabbitMQ e ferramentas de testes com justificativa curta.
 
 ## 1. Fundação — obrigatória
 
@@ -16,9 +16,9 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [ ] Implementar migrations MySQL, criação e idempotência transacional (AC05–06).
 - [ ] Implementar JWT, autorização e consulta por proprietário (AC01–02).
 - [ ] Implementar alteração de status, associação de motorista e concorrência (AC03, AC12).
-- [ ] Implementar outbox/publicador, contratos e topologia RabbitMQ; definir retries limitados/DLQ (AC10).
-- [ ] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09).
-- [ ] Implementar consulta com fallback e validação da versão (AC09, AC11).
+- [x] Implementar outbox/publicador, contratos e topologia RabbitMQ; definir retries limitados/DLQ (AC10). Falta validação integrada.
+- [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Falta validação integrada.
+- [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Falta validação integrada.
 - [ ] Implementar UI mínima e demonstrar fluxo completo (AC13).
 - [ ] Configurar CI para lint, testes e build de imagens; validar execução (AC14).
 
