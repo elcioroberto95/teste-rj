@@ -11,7 +11,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 ## 1. Fundação — obrigatória
 
 - [x] Criar módulo inicial da API, gerar Prisma Client e compilar (evidência no `docs/workflow.yaml`).
-- [ ] Preparar API NestJS, worker, React, configuração local e Compose com os oito componentes; validar saúde dos serviços. Compose inicial cobre sete serviços; UI React ainda pendente.
+- [ ] Preparar API NestJS, worker, React, configuração local e Compose com os oito componentes; validar saúde dos serviços. Implementação dos oito serviços concluída; build de imagem e smoke test pendentes.
 - [ ] Implementar entidade Corrida e transições; testar estados inválidos (AC03–04).
 - [ ] Implementar migrations MySQL, criação e idempotência transacional (AC05–06).
 - [ ] Implementar JWT, autorização e consulta por proprietário (AC01–02).
@@ -19,7 +19,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [x] Implementar outbox/publicador, contratos e topologia RabbitMQ; definir retries limitados/DLQ (AC10). Falta validação integrada.
 - [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Falta validação integrada.
 - [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Falta validação integrada.
-- [ ] Implementar UI mínima e demonstrar fluxo completo (AC13).
+- [ ] Implementar UI mínima e demonstrar fluxo completo (AC13). Código React implementado; validação integrada pendente.
 - [ ] Configurar CI para lint, testes e build de imagens; validar execução (AC14).
 
 ## 2. Operação — peso alto

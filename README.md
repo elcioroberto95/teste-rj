@@ -2,7 +2,7 @@
 
 Serviço de corridas com API NestJS, worker de eventos e interface React.
 
-**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox e worker de projeção MongoDB/Redis implementados. Compose inicial e healthcheck da API adicionados, mas ainda aguardam validação com daemon Docker. UI e CI continuam pendentes.
+**Estado atual:** API NestJS com POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React mínima implementados. O Compose define os oito serviços e valida sintaxe, mas o build das imagens e o fluxo integrado ainda aguardam daemon Docker.
 
 ## Desenvolvimento
 
@@ -62,7 +62,7 @@ docker compose up --build -d
 docker compose ps
 ```
 
-O worker aguarda a API e os serviços necessários ficarem saudáveis. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. A interface React e a instrumentação Prometheus da aplicação ainda não estão incluídas.
+O worker aguarda a API e os serviços necessários ficarem saudáveis. Acesse a UI em `http://localhost:8080`; o proxy encaminha `/v1` para a API. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. Prometheus inicia com scrape de si próprio; métricas da API/worker ainda não foram instrumentadas.
 
 `POST /v1/corridas` cria com JWT RS256 de perfil `passageiro` e cabeçalho `Idempotency-Key`; `GET /v1/corridas/:id` consulta a corrida do passageiro; `PATCH /v1/corridas/:id/status` aceita, inicia ou finaliza como motorista. Gere tokens de desenvolvimento com `npm run token:dev -- passageiro passageiro-demo` ou `npm run token:dev -- motorista motorista-demo`. As chaves ficam em `api/.dev-keys/`, ignoradas pelo Git, e são apenas para desenvolvimento. O Compose inicial está disponível acima; ainda falta validar a subida dos containers neste ambiente.
 

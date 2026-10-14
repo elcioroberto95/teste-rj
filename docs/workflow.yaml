@@ -68,9 +68,13 @@ workflow:
           status: verified
           evidence: "api: npm run db:generate e npm run build executados em 2026-10-14; chaves e JWT local de desenvolvimento gerados."
         - id: FND-002
-          description: "Compose define infraestrutura local, API e worker com dependências por healthcheck; API expõe health endpoint público."
+          description: "Compose define oito serviços com dependências por healthcheck; API expõe health endpoint público."
           status: pending
           evidence: null
+        - id: FND-003
+          description: "UI React compila para produção."
+          status: verified
+          evidence: "ui: npm run build passou em 2026-10-14; fluxos manuais ainda pendentes."
         - id: AC01
           description: "JWT ausente, inválido ou expirado retorna 401; token válido autentica."
           status: pending
