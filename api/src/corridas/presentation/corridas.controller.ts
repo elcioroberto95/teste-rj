@@ -12,9 +12,9 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import { randomUUID } from "node:crypto";
 import { UsuarioAtual } from "../../shared/auth/current-user.decorator.js";
 import type { UsuarioAutenticado } from "../../shared/auth/auth.types.js";
+import { normalizarCorrelationId } from "../../shared/observability/correlation-id.js";
 import { Perfis } from "../../shared/auth/roles.decorator.js";
 import {
   CriarCorridaUseCase,
@@ -54,7 +54,7 @@ function rethrowHttpError(error: unknown): never {
 }
 
 function correlationFromHeader(value: string | undefined): string {
-  return value && /^[a-zA-Z0-9._-]{1,100}$/.test(value) ? value : randomUUID();
+  return normalizarCorrelationId(value);
 }
 
 @Controller("corridas")

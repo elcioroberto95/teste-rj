@@ -26,7 +26,7 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 
 ## 2. Operação — peso alto
 
-- [ ] Especificar critérios de observabilidade e carga em `specs/002-operacao.md`.
+- [ ] Especificar critérios de observabilidade e carga em `specs/008-operacao-observabilidade.md`.
 - [ ] Logs JSON com correlação atravessando API, outbox, broker e worker.
 - [ ] `/metrics` API/worker: requisições, latência, erros e processamento. Coletar tamanho/atraso de fila; distinguir métricas do broker das métricas da aplicação.
 - [ ] OpenTelemetry e Jaeger/Tempo; obter trace real da API até o worker.

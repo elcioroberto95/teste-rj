@@ -16,7 +16,7 @@ workflow:
   blocker_status_values:
     - open
     - resolved
-  current_stage: foundation
+  current_stage: operations
 
   stages:
     - id: specification
@@ -231,7 +231,7 @@ workflow:
           evidence: "Use cases em application/use-cases; portas em application/ports; Prisma, Redis, scrypt e RS256 em infrastructure. Build, lint, 9 suítes/29 testes e smoke de cadastro/login no Compose passaram em 2026-10-14."
     - id: operations
       name: Operação e observabilidade
-      status: not_started
+      status: in_progress
       priority: high
       depends_on:
         - foundation
@@ -241,7 +241,7 @@ workflow:
         - id: OPS-001
           description: "Logs JSON propagam correlation_id entre API, broker e worker."
           status: pending
-          evidence: null
+          evidence: "Implementação iniciada em 2026-10-15: middleware HTTP, publicação da outbox e consumo/retry registram correlation_id; smoke integrado pendente."
         - id: OPS-002
           description: "API e worker expõem métricas Prometheus de requisições, latência, erros e fila."
           status: pending

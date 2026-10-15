@@ -1,6 +1,7 @@
 import type { EventoCorrida } from "../../contracts/event-envelope.js";
 import type { ConfirmPublisher } from "../../messaging/confirm-publisher.js";
 import type { OutboxRepository } from "./outbox.repository.js";
+import { logJson } from "../../../shared/observability/json-log.js";
 
 export class OutboxRelay {
   private running = false;
@@ -11,26 +12,42 @@ export class OutboxRelay {
     const events = await this.outbox.buscarPendentes(limit);
     let published = 0;
     for (const row of events) {
-      const envelope: EventoCorrida = {
+      const context = {
         event_id: row.id,
-        event_type: row.tipo as EventoCorrida["event_type"],
-        schema_version: row.versaoSchema,
-        occurred_at: row.ocorridoEm.toISOString(),
+        event_type: row.tipo,
         correlation_id: row.correlationId,
         corrida_id: row.corridaId,
         aggregate_version: row.versaoAgregado,
-        payload: row.payload as EventoCorrida["payload"],
       };
-      this.publisher.publish("corridas", row.tipo, Buffer.from(JSON.stringify(envelope)), {
-        persistent: true,
-        contentType: "application/json",
-        messageId: row.id,
-        correlationId: row.correlationId,
-        timestamp: Math.floor(row.ocorridoEm.getTime() / 1000),
-      });
-      await this.publisher.waitForConfirms();
-      await this.outbox.marcarPublicado(row.id, new Date());
-      published += 1;
+      try {
+        const envelope: EventoCorrida = {
+          event_id: row.id,
+          event_type: row.tipo as EventoCorrida["event_type"],
+          schema_version: row.versaoSchema,
+          occurred_at: row.ocorridoEm.toISOString(),
+          correlation_id: row.correlationId,
+          corrida_id: row.corridaId,
+          aggregate_version: row.versaoAgregado,
+          payload: row.payload as EventoCorrida["payload"],
+        };
+        this.publisher.publish("corridas", row.tipo, Buffer.from(JSON.stringify(envelope)), {
+          persistent: true,
+          contentType: "application/json",
+          messageId: row.id,
+          correlationId: row.correlationId,
+          timestamp: Math.floor(row.ocorridoEm.getTime() / 1000),
+        });
+        await this.publisher.waitForConfirms();
+        await this.outbox.marcarPublicado(row.id, new Date());
+        logJson("info", "worker", "outbox_event_published", context);
+        published += 1;
+      } catch (error) {
+        logJson("error", "worker", "outbox_event_publish_failed", {
+          ...context,
+          error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+        });
+        throw error;
+      }
     }
     return published;
   }
@@ -42,7 +59,9 @@ export class OutboxRelay {
         const count = await this.runOnce();
         if (count === 0) await new Promise((resolve) => setTimeout(resolve, intervalMs));
       } catch (error) {
-        console.error("Falha ao publicar outbox", error);
+        logJson("error", "worker", "outbox_relay_iteration_failed", {
+          error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+        });
         await new Promise((resolve) => setTimeout(resolve, intervalMs));
       }
     }
