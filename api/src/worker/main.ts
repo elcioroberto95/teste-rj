@@ -3,14 +3,14 @@ import amqp from "amqplib";
 import { MongoClient } from "mongodb";
 import { createClient } from "redis";
 import { PrismaService } from "../shared/database/prisma.service.js";
-import { ProjectionConsumer } from "./projection-consumer.js";
-import { OutboxRelay } from "./outbox-relay.js";
-import { PrismaOutboxRepository } from "./infrastructure/prisma-outbox.repository.js";
-import { MongoEventoAuditRepository } from "./mongo-event-audit.repository.js";
-import { RedisCorridaProjection } from "./redis-corrida.projection.js";
-import { ProcessarEventoCorridaUseCase } from "./processar-evento-corrida.use-case.js";
-import { RabbitRetryPublisher } from "./rabbit-retry.publisher.js";
-import { configurarTopologia } from "./rabbitmq-topology.js";
+import { ProjectionConsumer } from "./projection/transport/projection-consumer.js";
+import { OutboxRelay } from "./outbox/application/outbox-relay.js";
+import { PrismaOutboxRepository } from "./outbox/infrastructure/prisma-outbox.repository.js";
+import { MongoEventoAuditRepository } from "./projection/infrastructure/mongo-event-audit.repository.js";
+import { RedisCorridaProjection } from "./projection/infrastructure/redis-corrida.projection.js";
+import { ProcessarEventoCorridaUseCase } from "./projection/application/processar-evento-corrida.use-case.js";
+import { RabbitRetryPublisher } from "./projection/infrastructure/rabbit-retry.publisher.js";
+import { configurarTopologia } from "./projection/infrastructure/rabbitmq-topology.js";
 
 async function main(): Promise<void> {
   const rabbitUrl = process.env.RABBITMQ_URL;

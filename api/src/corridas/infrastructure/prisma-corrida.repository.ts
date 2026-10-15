@@ -7,7 +7,7 @@ import type {
   CorridaQueryRepository,
   CriarCorridaComIdempotencia,
   ResultadoCriacao,
-} from "../application/corrida.repository.js";
+} from "../application/ports/corrida.repository.js";
 import { ChaveIdempotenciaConflitanteError } from "../application/errors.js";
 import type { Corrida } from "../domain/corrida.js";
 import {

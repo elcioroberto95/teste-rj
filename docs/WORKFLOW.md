@@ -48,23 +48,38 @@ Uma tarefa está pronta para implementação quando seus critérios são verific
 
 Definir a linguagem do domínio, invariantes, estados e limites transacionais. Criar interfaces somente nas fronteiras que precisam de isolamento: persistência, publicação de eventos e acesso às projeções.
 
-Estrutura prevista:
+Estrutura adotada:
 
 ```text
-api/src/corridas/
-  domain/          # Corrida, status, regras e eventos
-  application/     # Casos de uso e portas
-  infrastructure/  # Banco, outbox, RabbitMQ e cache
-  presentation/    # HTTP, DTOs e guards
-worker/src/        # Consumo, deduplicação, auditoria e cache
+api/src/auth/                 # Identidade e sessão
+  presentation/               # HTTP e DTOs
+  application/
+    use-cases/                # Cadastro e login
+    ports/                    # Usuário, hash de senha, emissor de token
+  infrastructure/            # Prisma e segurança (scrypt/RS256)
+api/src/corridas/             # Contexto de Corridas
+  presentation/
+  application/
+    use-cases/                # Criar, consultar, alterar, listar
+    ports/                    # Repositórios e cache
+    policies/                 # Regras de consulta por perfil
+  domain/                     # Estado e invariantes da Corrida
+  infrastructure/             # Prisma e Redis
+api/src/worker/
+  main.ts          # Composição e ciclo de vida do processo
+  outbox/          # MySQL -> RabbitMQ
+  projection/      # RabbitMQ -> auditoria MongoDB e projeção Redis
+  messaging/       # Confirmação de publicação RabbitMQ
+  contracts/       # Envelope versionado de eventos
 ui/src/            # Fluxo mínimo do avaliador
+api/test/          # Testes organizados por contexto e fluxo
 ```
 
 DDD orienta a modelagem; SOLID orienta as dependências. Não criar um serviço por entidade, repositórios genéricos ou camadas sem responsabilidade concreta. O primeiro contexto é Corridas; identidade será representada por claims JWT, sem construir um provedor de autenticação.
 
 ### 3. Implementar
 
-Trabalhar em fatias verticais: entrada HTTP, regra, persistência, evento e efeito observável. Manter API e worker separados, com contratos de eventos explícitos. Não é necessário adotar event sourcing nem separar bancos de leitura e escrita para usar eventos.
+Trabalhar em fatias verticais: entrada HTTP, regra, persistência, evento e efeito observável. Manter API e worker como processos separados no mesmo pacote; organizar cada contexto em casos de uso, portas e adaptadores, e o worker por fluxo (outbox e projeções). Não é necessário adotar event sourcing nem separar bancos de leitura e escrita para usar eventos.
 
 Para cada fatia, implementar os testes que verificam suas regras e falhas relevantes. Usar testes unitários para transições e testes de integração para garantias de banco, broker e processamento.
 

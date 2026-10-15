@@ -209,6 +209,14 @@ workflow:
           description: "OutboxRelay depende de portas de repositório e publisher; ProjectionConsumer trata entrega e delega processamento, retry e topologia."
           status: verified
           evidence: "Testes unitários cobrem confirmações, falhas, retries/DLQ e requeue; smoke test no Compose confirmou MongoDB e Redis em 2026-10-14."
+        - id: SOLID-003
+          description: "Worker organizado por fluxo (outbox e projeção), com contratos, infraestrutura e testes fáceis de localizar."
+          status: verified
+          evidence: "api/src/worker/outbox e projection; testes em api/test/worker; README e WORKFLOW.md alinhados; build, lint, 9 suítes/29 testes e smoke test Compose passaram em 2026-10-14."
+        - id: SOLID-004
+          description: "Camadas de Auth e Corridas separam casos de uso, portas e adaptadores de infraestrutura."
+          status: verified
+          evidence: "Use cases em application/use-cases; portas em application/ports; Prisma, Redis, scrypt e RS256 em infrastructure. Build, lint, 9 suítes/29 testes e smoke de cadastro/login no Compose passaram em 2026-10-14."
     - id: operations
       name: Operação e observabilidade
       status: not_started

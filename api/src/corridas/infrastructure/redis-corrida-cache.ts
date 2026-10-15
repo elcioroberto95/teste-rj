@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { createClient, type RedisClientType } from "redis";
-import type { CorridaCache } from "../application/corrida-cache.js";
+import type { CorridaCache } from "../application/ports/corrida-cache.js";
 import type { Corrida } from "../domain/corrida.js";
 
 const UPDATE_IF_NEWER = `

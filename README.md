@@ -16,6 +16,10 @@ Usamos desenvolvimento guiado por especificações combinado com DDD (SDDD):
 
 Consulte o [workflow e suas etapas](docs/WORKFLOW.md), o [status, blockers e critérios em YAML](docs/workflow.yaml), a [especificação inicial](specs/001-corridas.md) e o [plano de tarefas](docs/TASKS.md).
 
+
+## Organização do código
+
+A API fica agrupada por contexto. Em `auth` e `corridas`, `application/use-cases` contém as operações da aplicação e `application/ports` define contratos de saída; Corridas também possui `application/policies` para as consultas por perfil. Prisma, Redis, hashing e emissão JWT ficam em `infrastructure`, enquanto controllers e DTOs ficam em `presentation`. O worker é um processo separado, com dois fluxos em `api/src/worker`: `outbox` publica eventos persistidos no MySQL no RabbitMQ; `projection` consome esses eventos e atualiza auditoria MongoDB e projeção Redis. `main.ts` compõe os adaptadores e inicia os fluxos.
 ## Arquitetura proposta
 
 ```text

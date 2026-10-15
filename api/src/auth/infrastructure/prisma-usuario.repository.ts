@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PerfilUsuario, Prisma } from "../../generated/prisma/client.js";
 import { PrismaService } from "../../shared/database/prisma.service.js";
 import { EmailJaCadastradoError } from "../application/errors.js";
-import type { Usuario, UsuarioRepository } from "../application/usuario.repository.js";
+import type { Usuario, UsuarioRepository } from "../application/ports/usuario.repository.js";
 
 function mapearUsuario(row: {
   id: string;

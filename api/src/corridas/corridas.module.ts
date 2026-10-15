@@ -1,22 +1,22 @@
 import { Module } from "@nestjs/common";
-import { CriarCorridaUseCase } from "./application/criar-corrida.use-case.js";
+import { CriarCorridaUseCase } from "./application/use-cases/criar-corrida.use-case.js";
 import {
   CORRIDA_COMMAND_REPOSITORY,
   CORRIDA_QUERY_REPOSITORY,
   type CorridaCommandRepository,
   type CorridaQueryRepository,
-} from "./application/corrida.repository.js";
-import { ConsultarCorridaUseCase } from "./application/consultar-corrida.use-case.js";
-import { AlterarStatusUseCase } from "./application/alterar-status.use-case.js";
+} from "./application/ports/corrida.repository.js";
+import { ConsultarCorridaUseCase } from "./application/use-cases/consultar-corrida.use-case.js";
+import { AlterarStatusUseCase } from "./application/use-cases/alterar-status.use-case.js";
 import { PrismaCorridaRepository } from "./infrastructure/prisma-corrida.repository.js";
 import { CorridasController } from "./presentation/corridas.controller.js";
 import { RedisCorridaCache } from "./infrastructure/redis-corrida-cache.js";
-import { CORRIDA_CACHE, type CorridaCache } from "./application/corrida-cache.js";
-import { ListarCorridasAbertasUseCase } from "./application/listar-corridas-abertas.use-case.js";
+import { CORRIDA_CACHE, type CorridaCache } from "./application/ports/corrida-cache.js";
+import { ListarCorridasAbertasUseCase } from "./application/use-cases/listar-corridas-abertas.use-case.js";
 import {
   ConsultarCorridaMotoristaPolicy,
   ConsultarCorridaPassageiroPolicy,
-} from "./application/consulta-corrida.policies.js";
+} from "./application/policies/consulta-corrida.policies.js";
 
 @Module({
   controllers: [CorridasController],

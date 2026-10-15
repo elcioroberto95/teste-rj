@@ -18,10 +18,10 @@ import type { UsuarioAutenticado } from "../../shared/auth/auth.types.js";
 import { Perfis } from "../../shared/auth/roles.decorator.js";
 import {
   CriarCorridaUseCase,
-} from "../application/criar-corrida.use-case.js";
+} from "../application/use-cases/criar-corrida.use-case.js";
 import { ChaveIdempotenciaConflitanteError } from "../application/errors.js";
-import { AlterarStatusUseCase } from "../application/alterar-status.use-case.js";
-import { ConsultarCorridaUseCase } from "../application/consultar-corrida.use-case.js";
+import { AlterarStatusUseCase } from "../application/use-cases/alterar-status.use-case.js";
+import { ConsultarCorridaUseCase } from "../application/use-cases/consultar-corrida.use-case.js";
 import {
   AcessoCorridaNegadoError,
   ConflitoVersaoCorridaError,
@@ -32,7 +32,7 @@ import {
 } from "../domain/corrida.js";
 import { CriarCorridaDto } from "./criar-corrida.dto.js";
 import { AlterarStatusDto } from "./alterar-status.dto.js";
-import { ListarCorridasAbertasUseCase } from "../application/listar-corridas-abertas.use-case.js";
+import { ListarCorridasAbertasUseCase } from "../application/use-cases/listar-corridas-abertas.use-case.js";
 
 function rethrowHttpError(error: unknown): never {
   if (error instanceof CorridaNaoEncontradaError) throw new NotFoundException(error.message);

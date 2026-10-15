@@ -1,8 +1,8 @@
 import { Body, ConflictException, Controller, HttpCode, HttpStatus, Post, UnauthorizedException } from "@nestjs/common";
 import { RotaPublica } from "../../shared/auth/roles.decorator.js";
-import { CadastrarUsuarioUseCase } from "../application/cadastrar-usuario.use-case.js";
+import { CadastrarUsuarioUseCase } from "../application/use-cases/cadastrar-usuario.use-case.js";
 import { CredenciaisInvalidasError, EmailJaCadastradoError } from "../application/errors.js";
-import { LoginUseCase } from "../application/login.use-case.js";
+import { LoginUseCase } from "../application/use-cases/login.use-case.js";
 import { CadastroUsuarioDto } from "./cadastro-usuario.dto.js";
 import { LoginDto } from "./login.dto.js";
 

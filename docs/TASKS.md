@@ -68,3 +68,15 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [x] Extrair porta/adaptador de outbox e confirmação RabbitMQ do relay.
 - [x] Separar processamento de projeção, auditoria, retry e topologia do consumidor.
 - [x] Validar com testes, lint, build e smoke test de MongoDB/Redis no Compose; evidências em docs/workflow.yaml e DIARIO.md.
+
+## Organização do código
+
+- [x] Agrupar worker por fluxo (outbox e projeção), contratos e mensageria; espelhar a estrutura nos testes.
+- [x] Alinhar README e WORKFLOW.md com a estrutura real em `api/src/worker`.
+
+## Organização das camadas da API
+
+- [x] Agrupar casos de uso em `application/use-cases` nos contextos Auth e Corridas.
+- [x] Concentrar contratos de saída em `application/ports` e manter adaptadores em infraestrutura.
+- [x] Organizar testes por contexto e fluxo e atualizar documentação da estrutura.
+- [x] Injetar hashing e emissão JWT pelos contratos para evitar dependência concreta nos casos de uso.
