@@ -121,8 +121,8 @@ workflow:
           evidence: "2026-10-15: evento versão 1 reenviado com Redis em versão 2 não regrediu cache; após DEL, GET retornou versão 2 via MySQL e repopulou Redis."
         - id: AC10
           description: "Broker indisponível não perde evento confirmado; projeção converge após recuperação."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "2026-10-15: corrida foi criada com RabbitMQ parado; após reconexão do worker, outbox publicou evento e MongoDB/Redis convergiram."
         - id: AC11
           description: "Consulta de corrida funciona via MySQL quando Redis está indisponível."
           status: pending
