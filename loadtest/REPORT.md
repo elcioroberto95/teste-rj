@@ -7,7 +7,7 @@
 Para executar com k6 instalado:
 
 ```sh
-k6 run observability/k6/health.js
+k6 run loadtest/health.js
 ```
 
 Ou com Docker Compose iniciado:
@@ -15,7 +15,7 @@ Ou com Docker Compose iniciado:
 ```sh
 docker run --rm --add-host=host.docker.internal:host-gateway \
   -e BASE_URL=http://host.docker.internal:3000 \
-  -v "$(pwd)/observability/k6:/scripts" grafana/k6 run /scripts/health.js
+  -v "$(pwd)/loadtest:/scripts" grafana/k6 run /scripts/health.js
 ```
 
 ## Resultado observado

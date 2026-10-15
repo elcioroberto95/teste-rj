@@ -1,8 +1,8 @@
 import type { EventoCorrida } from "../../contracts/event-envelope.js";
 import type { ConfirmPublisher } from "../../messaging/confirm-publisher.js";
 import type { OutboxRepository } from "./outbox.repository.js";
-import { camposDoErro, logJson } from "../../../shared/observability/json-log.js";
-import { incrementarMetrica } from "../../../shared/observability/metrics.js";
+import { camposDoErro, logJson } from "../../../../api/src/shared/observability/json-log.js";
+import { incrementarMetrica } from "../../../../api/src/shared/observability/metrics.js";
 
 export class OutboxRelay {
   private running = false;

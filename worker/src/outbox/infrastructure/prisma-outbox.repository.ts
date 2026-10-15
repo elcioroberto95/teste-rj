@@ -1,4 +1,4 @@
-import { PrismaService } from "../../../shared/database/prisma.service.js";
+import { PrismaService } from "../../../../api/src/shared/database/prisma.service.js";
 import type { OutboxRecord, OutboxRepository } from "../application/outbox.repository.js";
 
 export class PrismaOutboxRepository implements OutboxRepository {

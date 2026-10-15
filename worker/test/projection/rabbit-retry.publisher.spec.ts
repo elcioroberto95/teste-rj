@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { RabbitRetryPublisher } from "../../../src/worker/projection/infrastructure/rabbit-retry.publisher.js";
-import type { ConfirmPublisher } from "../../../src/worker/messaging/confirm-publisher.js";
+import { RabbitRetryPublisher } from "../../src/projection/infrastructure/rabbit-retry.publisher.js";
+import type { ConfirmPublisher } from "../../src/messaging/confirm-publisher.js";
 
 describe("RabbitRetryPublisher", () => {
   it("encaminha as primeiras três falhas para a fila com TTL e espera confirmação", async () => {

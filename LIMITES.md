@@ -1,28 +1,31 @@
 # Limites e riscos
 
-## Estado atual
+Estado revisado em 2026-10-15. Consulte [docs/workflow.yaml](docs/workflow.yaml) para critérios e evidências.
 
-API NestJS com cadastro/login, JWT RS256, POST idempotente, GET cache-aside e PATCH com transições/controle de versão; migrations de usuários, corrida, idempotência e outbox. Contas de passageiros e motoristas são persistidas no MySQL; senhas usam scrypt com salt. Relay RabbitMQ, worker com auditoria MongoDB, cache Redis, UI React, Compose com oito serviços e workflow GitHub Actions estão implementados. Em 2026-10-14 o cadastro/login foi validado via HTTP no Compose para ambos os perfis, incluindo senha incorreta, email duplicado, login após cadastro e fluxo de corrida passageiro→motorista. Lint API/UI, builds API/UI e 16 testes unitários passaram. A revisão manual da UI, concorrência simultânea, falhas/reentregas, instrumentação Prometheus, CI remoto, observabilidade completa e Kubernetes permanecem pendentes. O workflow ainda não rodou remotamente. O audit anterior registrou 24 vulnerabilidades (20 moderadas, 4 altas); as altas reportadas vinham de dependências transitivas da CLI Prisma 7.10 (`deepmerge-ts` e `mysql2`) e exigiriam downgrade major segundo o npm, que não aplicamos.
+## Implementado e observado
 
-## Escopo deliberadamente excluído
+- API NestJS e UI React com cadastro/login, perfis passageiro/motorista e fluxo de corridas.
+- Worker Node em diretório e imagem próprios; outbox MySQL, RabbitMQ, auditoria MongoDB e projeção Redis.
+- Regra de uma corrida ativa por motorista, inclusive disputa concorrente validada anteriormente no Compose.
+- Compose válido; imagens API e worker construídas após a instrumentação.
+- API, worker e RabbitMQ coletados no Prometheus; targets ativos; endpoint da API respondeu HTTP 200.
+- Dois alertas carregados no Prometheus.
+- Um smoke HTTP confirmou `correlation_id` entre o header recebido/devolvido e o log JSON da API.
 
-- Pagamentos, geolocalização, despacho automático e cancelamento.
-- Verificação de email, recuperação de senha, MFA, refresh tokens e provedor externo de identidade.
-- Event sourcing, transações distribuídas e serviços adicionais por entidade.
-- Listagem persistente de corridas na UI entre sessões na versão inicial.
+## Pendente
 
-## Riscos a validar
+- Trace OpenTelemetry percorrendo API, RabbitMQ e worker.
+- Validação da mesma correlação de ponta a ponta até a projeção.
+- Execução k6 e relatório com medidas reais.
+- Executar novamente lint e suíte de testes depois da reorganização dos arquivos do worker. O build da imagem Docker do worker já passou.
+- Revisão manual da UI no navegador e execução remota do GitHub Actions.
+- Manifestos Kubernetes, vídeo de apresentação e atualização final de documentação para entrega.
 
-- Outbox e retries adicionam implementação ao orçamento curto; validar o fluxo de recuperação antes de declarar confiabilidade.
-- Cache com verificação de versão mantém dependência do MySQL em cada leitura; medir o benefício real.
-- Deduplicação da auditoria não pode impedir a recuperação do cache após falha parcial.
-- Políticas de retry, retenção de outbox/eventos e idempotency keys ainda precisam de definição operacional.
-- Kubernetes e KEDA dependem do tempo restante após fundação e operação.
+## Riscos e melhorias futuras
 
-Atualizar este documento durante o trabalho e distinguir pendências temporárias dos limites finais da entrega.
-
-## Validação de autenticação
-
-AUTH-01–AUTH-04 foram verificados pelos testes unitários de `api/test/jwt.guard.spec.ts`; `npm test` passou com 16 testes em 3 suítes, incluindo o hasher de senha. O fluxo HTTP integrado confirmou cadastro/login de passageiro e motorista, rejeição de credenciais incorretas, JWT com perfil, consulta pelo proprietário e 403 para outro passageiro; POST repetido manteve o mesmo ID, corpo divergente retornou 409 e as transições concluíram com projeção Redis na versão 4. Permanecem sem validação concorrência simultânea, duplicata/reentrega de eventos, falha parcial, fallback com Redis indisponível e restauração do broker.
-
-O cadastro/login implementado usa credenciais e chave RS256 local; antes de produção, requer rotação/gestão segura de chaves, política contra abuso (rate limiting), verificação de email, recuperação de senha, MFA e hardening operacional.
+- Cadastro não inclui verificação de email, recuperação de senha, MFA nem rate limiting.
+- Chaves JWT locais são apenas para desenvolvimento; produção exige gestão e rotação segura.
+- Cache Redis é uma projeção eventual e descartável; o MySQL permanece como fonte da verdade.
+- Outbox e consumo são at-least-once; deduplicação e idempotência são necessárias, sem garantia de exactly-once entre bancos.
+- Limiares dos alertas são gatilhos iniciais de operação, ainda sem histórico de carga para justificar SLO.
+- O relatório k6 não contém resultados até a execução do cenário.

@@ -224,7 +224,7 @@ workflow:
         - id: SOLID-003
           description: "Worker organizado por fluxo (outbox e projeção), com contratos, infraestrutura e testes fáceis de localizar."
           status: verified
-          evidence: "api/src/worker/outbox e projection; testes em api/test/worker; README e WORKFLOW.md alinhados; build, lint, 9 suítes/29 testes e smoke test Compose passaram em 2026-10-14."
+          evidence: "worker/src/outbox e projection; testes em worker/test; build separado por worker/tsconfig.json e imagem worker/Dockerfile; README e WORKFLOW.md alinhados. docker compose config --quiet passou em 2026-10-15; build da nova imagem pendente após falha do BuildKit."
         - id: SOLID-004
           description: "Camadas de Auth e Corridas separam casos de uso, portas e adaptadores de infraestrutura."
           status: verified
@@ -257,7 +257,7 @@ workflow:
         - id: OPS-005
           description: "Script k6 e relatório registram cenário e medições reais."
           status: pending
-          evidence: "Cenário e limites iniciais em observability/k6/health.js; LOAD-REPORT.md registra que a execução e medições reais estão pendentes."
+          evidence: "Cenário e limites iniciais em loadtest/health.js; loadtest/REPORT.md registra que a execução e medições reais estão pendentes."
 
     - id: kubernetes
       name: Implantação Kubernetes

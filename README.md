@@ -1,78 +1,109 @@
 # Corridas — desafio técnico Taxi.Rio
 
-Serviço de corridas com API NestJS, worker de eventos e interface React.
+Serviço simplificado de corridas com UI React, API NestJS, worker Node, MySQL, RabbitMQ, Redis e MongoDB. O MySQL é a fonte da verdade; eventos da outbox atualizam a auditoria no MongoDB e a projeção/cache no Redis.
 
-**Estado atual:** API NestJS com cadastro/login de passageiros e motoristas, POST, GET cache-aside e PATCH de corridas; relay da outbox, worker de projeção MongoDB/Redis e UI React implementados. Testes unitários, lint e builds passam. Em 2026-10-14, os oito serviços foram construídos e iniciados pelo Compose; migration de usuários, autenticação por perfil, autorização, idempotência e projeção de eventos foram exercitadas via HTTP. Revisão manual da UI, concorrência simultânea, reentrega após falha, observabilidade completa, Kubernetes e execução remota do GitHub Actions seguem pendentes.
+## Estado e limites atuais
 
-## Desenvolvimento
+A fundação funcional inclui cadastro/login de passageiros e motoristas, autorização por perfil, idempotência, criação e transições de corrida, fila de corridas abertas e limite de uma corrida ativa por motorista. API e worker são processos separados e têm código em diretórios próprios. O Compose também inicia UI e Prometheus.
 
-Usamos desenvolvimento guiado por especificações combinado com DDD (SDDD):
+A etapa de operação já tem logs JSON, métricas Prometheus para API/worker, scrape do RabbitMQ e dois alertas carregados. Continuam pendentes o trace OpenTelemetry de ponta a ponta, a confirmação da correlação em uma jornada completa até o worker e a execução do cenário k6 com resultados reais. A Parte 3 (Kubernetes) ainda não foi implementada. Veja [LIMITES.md](LIMITES.md) e o [workflow oficial](docs/workflow.yaml) para o estado detalhado.
 
-1. Especificar comportamento observável e critérios de aceite.
-2. Modelar regras do domínio e contratos necessários.
-3. Implementar uma fatia funcional pequena.
-4. Validar os critérios com testes e evidências.
-5. Registrar decisões, limitações e um commit que explique a mudança.
-
-Consulte o [workflow e suas etapas](docs/WORKFLOW.md), o [status, blockers e critérios em YAML](docs/workflow.yaml), a [especificação inicial](specs/001-corridas.md) e o [plano de tarefas](docs/TASKS.md).
-
-
-## Organização do código
-
-A API fica agrupada por contexto. Em `auth` e `corridas`, `application/use-cases` contém as operações da aplicação e `application/ports` define contratos de saída; Corridas também possui `application/policies` para as consultas por perfil. Prisma, Redis, hashing e emissão JWT ficam em `infrastructure`, enquanto controllers e DTOs ficam em `presentation`. O worker é um processo separado, com dois fluxos em `api/src/worker`: `outbox` publica eventos persistidos no MySQL no RabbitMQ; `projection` consome esses eventos e atualiza auditoria MongoDB e projeção Redis. `main.ts` compõe os adaptadores e inicia os fluxos.
-## Arquitetura proposta
+## Estrutura
 
 ```text
-React --HTTP/JWT--> API NestJS --> MySQL (fonte da verdade)
-                                      |
-                              outbox / publicador
-                                      |
-                                  RabbitMQ
-                                      |
-                                   Worker
-                                  /      \
-                        Redis (cache)   MongoDB (auditoria)
+README.md
+DECISIONS.md
+DIARIO.md
+LIMITES.md
+docker-compose.yml
+api/                      API, domínio Corridas, autenticação, Prisma e testes
+worker/                   processo Node: outbox e projeção
+ui/                       interface React e proxy Nginx
+k8s/                      estado e pendências da Parte 3
+observability/             Prometheus e regras de alerta
+loadtest/                  script k6 e relatório de carga
+specs/                     especificações por fatia
+docs/                      workflow, status e tarefas
+.github/workflows/         CI
 ```
 
-A API e o worker serão processos separados no mesmo repositório. O domínio terá regras independentes do NestJS e das bibliotecas de persistência. Os efeitos dos eventos terão consistência eventual; o MySQL continuará sendo a referência para o estado atual.
+## Iniciar com Docker Compose
 
-## Registros do projeto
-
-- [Decisões e alternativas](DECISIONS.md)
-- [Diário de desenvolvimento](DIARIO.md)
-- [Limites e riscos conhecidos](LIMITES.md)
-
-## API em desenvolvimento
-
-Requer Node.js 24 e MySQL acessível em `localhost:3306`. No PowerShell, a partir da raiz:
+Requer Docker com Compose. Gere a chave local antes da primeira subida:
 
 ```powershell
 Set-Location api
-Copy-Item .env.example .env
-npm install
-npm run keys:dev
-npm run db:generate
-npm run db:migrate:deploy
-npm test
-npm run start:dev
-```
-
-Para iniciar a infraestrutura e a API, gere a chave de desenvolvimento e rode o Compose na raiz do repositório:
-
-```powershell
-Set-Location api
+npm ci
 npm run keys:dev
 Set-Location ..
 docker compose up --build -d
 docker compose ps
 ```
 
-O worker aguarda a API e os serviços necessários ficarem saudáveis. No Compose, acesse `http://localhost:3000`: a UI permite criar conta ou entrar, e o proxy encaminha `/v1` para a API. A API também fica disponível diretamente em `http://localhost:3001` para testes. O Compose publica os serviços somente em localhost; as credenciais incluídas são exclusivamente para desenvolvimento local. Prometheus inicia com scrape de si próprio; métricas da API/worker ainda não foram instrumentadas. Consulte `specs/002-ambiente-local.md` para evidências e limites do smoke test.
+A UI fica em [http://localhost:3000](http://localhost:3000). A API fica disponível pelo proxy em `/v1` e diretamente em [http://localhost:3001](http://localhost:3001). A chave gerada em `api/.dev-keys/` é local e ignorada pelo Git. Credenciais do Compose são exclusivamente de desenvolvimento.
 
-Na UI, crie uma conta como passageiro ou motorista usando nome, email e senha (mínimo de 8 caracteres). O cadastro persiste a conta no MySQL e inicia a sessão; depois, entre com email e senha. Cada conta tem UUID gerado pelo backend e JWT RS256 de uma hora; o token fica em memória no navegador. Crie uma conta de cada perfil para demonstrar a jornada completa. Para chamadas manuais, `POST /v1/corridas` exige JWT de passageiro e `Idempotency-Key`; `GET /v1/corridas/:id` consulta como proprietário; `PATCH /v1/corridas/:id/status` altera como motorista. Gere a chave local antes com `npm run keys:dev`; arquivos em `api/.dev-keys/` são ignorados pelo Git e servem apenas ao ambiente local. O script `npm run token:dev` permanece disponível para testes manuais.
+Para encerrar os containers e manter os volumes:
+
+```powershell
+docker compose down
+```
+
+Para remover também os dados locais:
+
+```powershell
+docker compose down -v
+```
+
+## Fluxo demonstrável
+
+1. Cadastre uma conta com perfil passageiro e outra com perfil motorista.
+2. Entre como passageiro e solicite uma corrida.
+3. Entre como motorista, consulte a fila de corridas abertas e aceite uma.
+4. Avance o status até `EM_ANDAMENTO` e `FINALIZADA`.
+5. Confira a corrida na UI e na API. Um motorista que já tem corrida ativa recebe conflito ao aceitar outra.
+
+As regras completas de autorização, idempotência e transição estão em [specs/001-corridas.md](specs/001-corridas.md) e [specs/007-listagem-corridas-motoristas.md](specs/007-listagem-corridas-motoristas.md).
+
+## Desenvolvimento e validação
+
+Com as dependências locais instaladas em `api/`:
+
+```powershell
+Set-Location api
+npm ci
+npm run db:generate
+npm run build
+npm run build:worker
+npm run lint
+npm test
+```
+
+Os testes de integração com serviços usam o Compose. O script `npm run smoke:active-driver` valida a regra de uma corrida ativa por motorista quando o ambiente local está iniciado.
+
+## Operação
+
+- UI: [http://localhost:3000](http://localhost:3000)
+- Saúde da API: [http://localhost:3001/v1/health](http://localhost:3001/v1/health)
+- Métricas da API: [http://localhost:3001/metrics](http://localhost:3001/metrics)
+- Alertas carregados no Prometheus: [http://localhost:9090/alerts](http://localhost:9090/alerts)
+- Métricas do worker: endpoint interno `worker:3002/metrics`, coletado pelo Prometheus.
+- Métricas nativas do RabbitMQ: coletadas pelo plugin Prometheus do broker.
+
+Os logs JSON usam `correlation_id` e não registram payloads. O smoke HTTP confirmou a propagação no header e no log de acesso da API; a jornada completa pelo broker e worker ainda está pendente.
+
+O cenário k6 está em [loadtest/health.js](loadtest/health.js). A execução e o relatório com medições reais ainda precisam ser concluídos; consulte [loadtest/REPORT.md](loadtest/REPORT.md). Os critérios e a justificativa dos alertas estão em [specs/008-operacao-observabilidade.md](specs/008-operacao-observabilidade.md).
+
+## Histórico do desenvolvimento
+
+- [DECISIONS.md](DECISIONS.md): contexto, alternativas, escolha e trade-offs.
+- [DIARIO.md](DIARIO.md): registro cronológico de tentativas e resultados.
+- [LIMITES.md](LIMITES.md): itens ausentes e riscos conhecidos.
+- [docs/WORKFLOW.md](docs/WORKFLOW.md): processo SDDD.
+- [docs/workflow.yaml](docs/workflow.yaml): status oficial, critérios e evidências.
+- [docs/TASKS.md](docs/TASKS.md): decomposição técnica.
 
 ## Uso de IA
 
-Até o momento, Codex foi utilizado para ler o enunciado, discutir arquitetura e preparar o workflow e a especificação. Toda implementação deverá ser revisada e compreendida pelo candidato.
+Codex foi usado para discutir arquitetura, revisar especificações, implementar e reorganizar código, documentação e configuração, além de ajudar na investigação de falhas. A pessoa candidata deve revisar e ser capaz de explicar cada decisão e mudança.
 
-Exemplo de sugestão rejeitada ou corrigida: ainda não registrado. Preencher com um caso real durante o desenvolvimento.
+Uma sugestão inicial foi manter o código do worker dentro de `api/src/worker` para compartilhar build e dependências. Ao comparar com a estrutura pedida no desafio, essa escolha foi corrigida: o processo e o código do worker agora ficam em `worker/`, com build e imagem próprios. Outra direção inicial de usar uma sessão de demonstração foi substituída, a pedido do candidato, por cadastro e login persistidos para os perfis passageiro e motorista.

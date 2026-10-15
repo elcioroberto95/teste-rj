@@ -16,7 +16,7 @@ Subir API, worker, MySQL, RabbitMQ, MongoDB, Redis, Prometheus e UI React em uma
 - Worker aguarda API saudável (migrations aplicadas) e os serviços que consome.
 - Credenciais do Compose são valores locais de demonstração, nunca de produção.
 - O endereço principal de demonstração é `http://localhost:3000` e abre a UI de cadastro/login; a API fica em `http://localhost:3001` para chamadas diretas, enquanto a UI usa o proxy same-origin `/v1`.
-- Prometheus sobe com configuração mínima; instrumentação e scrape da aplicação serão adicionados na especificação de observabilidade.
+- Prometheus coleta API, worker e RabbitMQ; alertas ficam em `observability/alerts.yml` e a variante Prometheus Operator em `observability/alerts-prometheusrule.yaml`.
 - UI é servida pelo Nginx e encaminha `/v1` à API na rede interna do Compose.
 
 ## Critérios de aceite
@@ -45,4 +45,4 @@ Na configuração atual, `http://localhost:3000` é a entrada para avaliadores: 
 
 ## Fora de escopo
 
-Métricas de aplicação, traces, credenciais de produção, backup/HA e Kubernetes.
+Traces distribuídos (especificados em `specs/008-operacao-observabilidade.md`), credenciais de produção, backup/HA e Kubernetes.

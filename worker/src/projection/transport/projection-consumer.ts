@@ -2,8 +2,8 @@ import type { ConfirmChannel, ConsumeMessage } from "amqplib";
 import type { ProcessarEventoCorridaUseCase } from "../application/processar-evento-corrida.use-case.js";
 import type { RetryPublisher } from "../application/projection-ports.js";
 import { validarEvento } from "../../contracts/event-envelope.js";
-import { camposDoErro, logJson } from "../../../shared/observability/json-log.js";
-import { incrementarMetrica } from "../../../shared/observability/metrics.js";
+import { camposDoErro, logJson } from "../../../../api/src/shared/observability/json-log.js";
+import { incrementarMetrica } from "../../../../api/src/shared/observability/metrics.js";
 
 export class ProjectionConsumer {
   constructor(

@@ -3,7 +3,7 @@ export default {
   testEnvironment: "node",
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: { "^(\\.{1,2}/.*)\\.js$": "$1" },
-  testMatch: ["<rootDir>/test/**/*.spec.ts"],
+  testMatch: ["<rootDir>/test/**/*.spec.ts", "<rootDir>/../worker/test/**/*.spec.ts"],
   transform: {
     "^.+\\.tsx?$": [
       "ts-jest",

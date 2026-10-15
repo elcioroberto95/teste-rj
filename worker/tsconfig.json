@@ -1,0 +1,15 @@
+{
+  "extends": "../api/tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "./dist",
+    "declaration": false,
+    "incremental": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "../api/src/shared/**/*.ts",
+    "../api/src/corridas/domain/corrida.ts",
+    "../api/src/generated/prisma/**/*.ts"
+  ]
+}

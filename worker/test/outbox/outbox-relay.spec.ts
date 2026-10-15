@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { OutboxRelay } from "../../../src/worker/outbox/application/outbox-relay.js";
-import type { ConfirmPublisher } from "../../../src/worker/messaging/confirm-publisher.js";
-import type { OutboxRepository, OutboxRecord } from "../../../src/worker/outbox/application/outbox.repository.js";
+import { OutboxRelay } from "../../src/outbox/application/outbox-relay.js";
+import type { ConfirmPublisher } from "../../src/messaging/confirm-publisher.js";
+import type { OutboxRepository, OutboxRecord } from "../../src/outbox/application/outbox.repository.js";
 
 const evento: OutboxRecord = {
   id: "event-1",

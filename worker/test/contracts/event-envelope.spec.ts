@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { validarEvento } from "../../../src/worker/contracts/event-envelope.js";
+import { validarEvento } from "../../src/contracts/event-envelope.js";
 
 const evento = {
   event_id: "evento-1",

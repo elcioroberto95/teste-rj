@@ -72,7 +72,9 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 ## Organização do código
 
 - [x] Agrupar worker por fluxo (outbox e projeção), contratos e mensageria; espelhar a estrutura nos testes.
-- [x] Alinhar README e WORKFLOW.md com a estrutura real em `api/src/worker`.
+- [x] Mover o processo e o código do worker para o diretório raiz `worker/`, com build e imagem independentes.
+- [x] Colocar o cenário k6 e o relatório em `loadtest/` conforme o layout do desafio.
+- [x] Alinhar README e WORKFLOW.md com a estrutura real do repositório.
 
 ## Organização das camadas da API
 

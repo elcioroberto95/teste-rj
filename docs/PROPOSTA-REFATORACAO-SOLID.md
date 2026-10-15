@@ -10,9 +10,9 @@ A refatoração deve preservar os comportamentos já acordados: MySQL continua s
 
 ## Estado atual observado
 
-1. `ProjectionConsumer` em `api/src/worker/projection-consumer.ts` grava auditoria no MongoDB, atualiza Redis, publica retries/DLQ e divide o arquivo com a configuração da topologia RabbitMQ.
+1. `ProjectionConsumer` em `worker/src/projection/transport/projection-consumer.ts` coordena o ciclo de entrega; auditoria, projeção, retries/DLQ e topologia ficam em componentes separados.
 2. `CorridasModule` em `api/src/corridas/corridas.module.ts` já registra tokens de repositório/cache, mas as factories tipam suas dependências como `PrismaCorridaRepository` e `RedisCorridaCache`.
-3. `OutboxRelay` em `api/src/worker/outbox-relay.ts` consulta e atualiza `PrismaService` diretamente, além de publicar no RabbitMQ e executar o loop periódico.
+3. `OutboxRelay` em `worker/src/outbox/application/outbox-relay.ts` depende da porta de outbox e do publisher confirmado.
 4. `CorridaRepository` em `api/src/corridas/application/corrida.repository.ts` reúne criação idempotente, consulta, listagem e alteração de status, embora cada caso de uso use somente parte dessas operações.
 
 ## Solução proposta
@@ -29,7 +29,7 @@ Manter um adaptador de mensagem RabbitMQ responsável pelo ciclo da entrega: val
 | Criar exchanges, filas e bindings | Configurador de topologia RabbitMQ | Configuração de infraestrutura |
 | Coordenar auditoria e projeção | `ProcessarEventoCorridaUseCase` | Recebe as três portas necessárias |
 
-O consumidor não deve conhecer `Db`, `RedisClientType` nem detalhes da topologia. A composição das implementações fica no ponto de entrada do worker, `api/src/worker/main.ts`.
+O consumidor não deve conhecer `Db`, `RedisClientType` nem detalhes da topologia. A composição das implementações fica no ponto de entrada `worker/src/main.ts`.
 
 **Invariantes obrigatórias:**
 

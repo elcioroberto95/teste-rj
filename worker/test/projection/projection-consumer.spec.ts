@@ -1,8 +1,8 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import type { ConfirmChannel, ConsumeMessage } from "amqplib";
-import { ProjectionConsumer } from "../../../src/worker/projection/transport/projection-consumer.js";
-import type { ProcessarEventoCorridaUseCase } from "../../../src/worker/projection/application/processar-evento-corrida.use-case.js";
-import type { RetryPublisher } from "../../../src/worker/projection/application/projection-ports.js";
+import { ProjectionConsumer } from "../../src/projection/transport/projection-consumer.js";
+import type { ProcessarEventoCorridaUseCase } from "../../src/projection/application/processar-evento-corrida.use-case.js";
+import type { RetryPublisher } from "../../src/projection/application/projection-ports.js";
 
 function criarMensagem(): ConsumeMessage {
   return {

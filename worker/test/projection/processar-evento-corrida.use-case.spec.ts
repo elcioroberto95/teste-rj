@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { ProcessarEventoCorridaUseCase } from "../../../src/worker/projection/application/processar-evento-corrida.use-case.js";
-import type { CorridaProjection, EventoAuditRepository } from "../../../src/worker/projection/application/projection-ports.js";
-import type { EventoCorrida } from "../../../src/worker/contracts/event-envelope.js";
+import { ProcessarEventoCorridaUseCase } from "../../src/projection/application/processar-evento-corrida.use-case.js";
+import type { CorridaProjection, EventoAuditRepository } from "../../src/projection/application/projection-ports.js";
+import type { EventoCorrida } from "../../src/contracts/event-envelope.js";
 
 const evento: EventoCorrida = {
   event_id: "event-1",

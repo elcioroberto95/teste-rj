@@ -65,21 +65,28 @@ api/src/corridas/             # Contexto de Corridas
     policies/                 # Regras de consulta por perfil
   domain/                     # Estado e invariantes da Corrida
   infrastructure/             # Prisma e Redis
-api/src/worker/
-  main.ts          # Composição e ciclo de vida do processo
-  outbox/          # MySQL -> RabbitMQ
-  projection/      # RabbitMQ -> auditoria MongoDB e projeção Redis
-  messaging/       # Confirmação de publicação RabbitMQ
-  contracts/       # Envelope versionado de eventos
+worker/
+  Dockerfile       # Imagem do processo de consumo
+  tsconfig.json    # Build Node separado
+  src/main.ts      # Composição e ciclo de vida do processo
+  src/outbox/      # MySQL -> RabbitMQ
+  src/projection/  # RabbitMQ -> auditoria MongoDB e projeção Redis
+  src/messaging/   # Confirmação de publicação RabbitMQ
+  src/contracts/   # Envelope versionado de eventos
+loadtest/          # Cenário k6 e relatório
+k8s/               # Parte 3, ainda pendente
+observability/     # Scrape Prometheus e alertas
 ui/src/            # Fluxo mínimo do avaliador
 api/test/          # Testes organizados por contexto e fluxo
 ```
+
+O worker tem diretório, build e imagem próprios. Ele reutiliza Prisma e utilitários compartilhados de `api/src`, evitando duplicar esses adaptadores.
 
 DDD orienta a modelagem; SOLID orienta as dependências. Não criar um serviço por entidade, repositórios genéricos ou camadas sem responsabilidade concreta. O primeiro contexto é Corridas; identidade será representada por claims JWT, sem construir um provedor de autenticação.
 
 ### 3. Implementar
 
-Trabalhar em fatias verticais: entrada HTTP, regra, persistência, evento e efeito observável. Manter API e worker como processos separados no mesmo pacote; organizar cada contexto em casos de uso, portas e adaptadores, e o worker por fluxo (outbox e projeções). Não é necessário adotar event sourcing nem separar bancos de leitura e escrita para usar eventos.
+Trabalhar em fatias verticais: entrada HTTP, regra, persistência, evento e efeito observável. Manter API e worker como processos separados no mesmo repositório, cada um com seu diretório e imagem; o worker reutiliza dependências e adaptadores compartilhados da API. Organizar cada contexto em casos de uso, portas e adaptadores, e o worker por fluxo (outbox e projeções). Não é necessário adotar event sourcing nem separar bancos de leitura e escrita para usar eventos.
 
 Para cada fatia, implementar os testes que verificam suas regras e falhas relevantes. Usar testes unitários para transições e testes de integração para garantias de banco, broker e processamento.
 

@@ -100,9 +100,8 @@ services:
 
   worker:
     build:
-      context: ./api
-      dockerfile: Dockerfile
-    command: ["npm", "run", "start:worker"]
+      context: .
+      dockerfile: worker/Dockerfile
     expose:
       - "3002"
     environment:

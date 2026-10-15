@@ -1,4 +1,4 @@
-import { isStatusCorrida, type StatusCorrida } from "../../corridas/domain/corrida.js";
+import { isStatusCorrida, type StatusCorrida } from "../../../api/src/corridas/domain/corrida.js";
 
 export interface EventoCorrida {
   event_id: string;
