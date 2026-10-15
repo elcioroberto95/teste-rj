@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/commo
 import { createClient, type RedisClientType } from "redis";
 import type { CorridaCache } from "../application/ports/corrida-cache.js";
 import type { Corrida } from "../domain/corrida.js";
+import { isStatusCorrida } from "../domain/corrida.js";
 
 const UPDATE_IF_NEWER = `
 local current = redis.call('GET', KEYS[1])
@@ -21,7 +22,7 @@ function parseCorrida(value: string): Corrida | null {
       typeof parsed.id !== "string" || typeof parsed.passageiroId !== "string" ||
       typeof parsed.origem !== "string" || typeof parsed.destino !== "string" ||
       typeof parsed.versao !== "number" ||
-      !["SOLICITADA", "ACEITA", "EM_ANDAMENTO", "FINALIZADA"].includes(parsed.status ?? "") ||
+      !isStatusCorrida(parsed.status) ||
       !(parsed.motoristaId === null || typeof parsed.motoristaId === "string") ||
       typeof parsed.criadaEm !== "string" && !(parsed.criadaEm instanceof Date)
     ) return null;

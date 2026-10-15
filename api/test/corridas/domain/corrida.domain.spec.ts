@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   criarCorrida,
   transicionarCorrida,
+  proximoStatusCorrida,
   CorridaInvalidaError,
   MotoristaNaoResponsavelError,
   TransicaoCorridaInvalidaError,
@@ -44,6 +45,13 @@ describe("Corrida", () => {
     expect([aceita.versao, iniciada.versao, finalizada.versao]).toEqual([2, 3, 4]);
     expect(finalizada.id).toBe("corrida-1");
     expect(finalizada.motoristaId).toBe("motorista-1");
+  });
+
+  it("expõe a próxima transição a partir da mesma regra usada pelo domínio", () => {
+    expect(proximoStatusCorrida("SOLICITADA")).toBe("ACEITA");
+    expect(proximoStatusCorrida("ACEITA")).toBe("EM_ANDAMENTO");
+    expect(proximoStatusCorrida("EM_ANDAMENTO")).toBe("FINALIZADA");
+    expect(proximoStatusCorrida("FINALIZADA")).toBeNull();
   });
 
   it("permite somente a próxima transição declarada para cada estado", () => {

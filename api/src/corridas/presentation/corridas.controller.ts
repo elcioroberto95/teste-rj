@@ -33,6 +33,7 @@ import {
 import { CriarCorridaDto } from "./criar-corrida.dto.js";
 import { AlterarStatusDto } from "./alterar-status.dto.js";
 import { ListarCorridasAbertasUseCase } from "../application/use-cases/listar-corridas-abertas.use-case.js";
+import { apresentarCorrida } from "./corrida-response.js";
 
 function rethrowHttpError(error: unknown): never {
   if (error instanceof CorridaNaoEncontradaError) throw new NotFoundException(error.message);
@@ -82,7 +83,7 @@ export class CorridasController {
         destino: body.destino,
         correlationId: correlationFromHeader(correlationId),
       });
-      return result.corrida;
+      return apresentarCorrida(result.corrida);
     } catch (error) {
       rethrowHttpError(error);
     }
@@ -101,7 +102,7 @@ export class CorridasController {
     @Param("id", new ParseUUIDPipe({ version: "4" })) corridaId: string,
   ) {
     try {
-      return await this.consultarCorrida.execute(corridaId, usuario.sub, usuario.role);
+      return apresentarCorrida(await this.consultarCorrida.execute(corridaId, usuario.sub, usuario.role));
     } catch (error) {
       rethrowHttpError(error);
     }
@@ -116,12 +117,12 @@ export class CorridasController {
     @Body() body: AlterarStatusDto,
   ) {
     try {
-      return await this.alterarStatus.execute({
+      return apresentarCorrida(await this.alterarStatus.execute({
         corridaId,
         motoristaId: usuario.sub,
         novoStatus: body.status,
         correlationId: correlationFromHeader(correlationId),
-      });
+      }));
     } catch (error) {
       rethrowHttpError(error);
     }

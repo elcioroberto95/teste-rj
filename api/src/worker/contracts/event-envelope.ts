@@ -1,3 +1,5 @@
+import { isStatusCorrida, type StatusCorrida } from "../../corridas/domain/corrida.js";
+
 export interface EventoCorrida {
   event_id: string;
   event_type: "corrida.criada" | "corrida.status_alterado";
@@ -12,26 +14,71 @@ export interface EventoCorrida {
     motoristaId: string | null;
     origem: string;
     destino: string;
-    status: "SOLICITADA" | "ACEITA" | "EM_ANDAMENTO" | "FINALIZADA";
+    status: StatusCorrida;
     versao: number;
     criadaEm: string;
   };
 }
 
-export function validarEvento(value: unknown): EventoCorrida {
-  if (!value || typeof value !== "object") throw new Error("Envelope de evento inválido");
-  const event = value as Partial<EventoCorrida>;
+type Registro = Record<string, unknown>;
+
+function isRegistro(value: unknown): value is Registro {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isEventType(value: unknown): value is EventoCorrida["event_type"] {
+  return value === "corrida.criada" || value === "corrida.status_alterado";
+}
+
+function validarPayload(value: unknown): EventoCorrida["payload"] | null {
+  if (!isRegistro(value)) return null;
   if (
-    typeof event.event_id !== "string" ||
-    (event.event_type !== "corrida.criada" && event.event_type !== "corrida.status_alterado") ||
-    typeof event.schema_version !== "number" ||
-    typeof event.occurred_at !== "string" ||
-    typeof event.correlation_id !== "string" ||
-    typeof event.corrida_id !== "string" ||
-    typeof event.aggregate_version !== "number" ||
-    !event.payload || typeof event.payload !== "object" ||
-    event.payload.id !== event.corrida_id ||
-    event.payload.versao !== event.aggregate_version
+    typeof value.id !== "string" ||
+    typeof value.passageiroId !== "string" ||
+    !(value.motoristaId === null || typeof value.motoristaId === "string") ||
+    typeof value.origem !== "string" ||
+    typeof value.destino !== "string" ||
+    !isStatusCorrida(value.status) ||
+    typeof value.versao !== "number" ||
+    typeof value.criadaEm !== "string"
+  ) return null;
+
+  return {
+    id: value.id,
+    passageiroId: value.passageiroId,
+    motoristaId: value.motoristaId,
+    origem: value.origem,
+    destino: value.destino,
+    status: value.status,
+    versao: value.versao,
+    criadaEm: value.criadaEm,
+  };
+}
+
+export function validarEvento(value: unknown): EventoCorrida {
+  if (!isRegistro(value)) throw new Error("Envelope de evento inválido");
+  const payload = validarPayload(value.payload);
+  if (
+    typeof value.event_id !== "string" ||
+    !isEventType(value.event_type) ||
+    typeof value.schema_version !== "number" ||
+    typeof value.occurred_at !== "string" ||
+    typeof value.correlation_id !== "string" ||
+    typeof value.corrida_id !== "string" ||
+    typeof value.aggregate_version !== "number" ||
+    !payload ||
+    payload.id !== value.corrida_id ||
+    payload.versao !== value.aggregate_version
   ) throw new Error("Envelope de evento inválido");
-  return event as EventoCorrida;
+
+  return {
+    event_id: value.event_id,
+    event_type: value.event_type,
+    schema_version: value.schema_version,
+    occurred_at: value.occurred_at,
+    correlation_id: value.correlation_id,
+    corrida_id: value.corrida_id,
+    aggregate_version: value.aggregate_version,
+    payload,
+  };
 }

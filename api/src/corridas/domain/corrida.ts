@@ -1,4 +1,5 @@
-export type StatusCorrida = "SOLICITADA" | "ACEITA" | "EM_ANDAMENTO" | "FINALIZADA";
+export const STATUS_CORRIDA = ["SOLICITADA", "ACEITA", "EM_ANDAMENTO", "FINALIZADA"] as const;
+export type StatusCorrida = (typeof STATUS_CORRIDA)[number];
 
 const TRANSICOES_PERMITIDAS: Readonly<Record<StatusCorrida, readonly StatusCorrida[]>> = {
   SOLICITADA: ["ACEITA"],
@@ -6,6 +7,14 @@ const TRANSICOES_PERMITIDAS: Readonly<Record<StatusCorrida, readonly StatusCorri
   EM_ANDAMENTO: ["FINALIZADA"],
   FINALIZADA: [],
 };
+
+export function proximoStatusCorrida(status: StatusCorrida): StatusCorrida | null {
+  return TRANSICOES_PERMITIDAS[status][0] ?? null;
+}
+
+export function isStatusCorrida(value: unknown): value is StatusCorrida {
+  return typeof value === "string" && STATUS_CORRIDA.some((status) => status === value);
+}
 
 export interface Corrida {
   id: string;

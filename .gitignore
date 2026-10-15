@@ -8,3 +8,4 @@ coverage/
 api/src/generated/
 api/.dev-keys/
 api/prisma/migrations/*/migration_lock.toml.tmp
+.tools/

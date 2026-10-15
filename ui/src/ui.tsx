@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 type Corrida = {
   id: string;
   origem: string;
   destino: string;
   status: "SOLICITADA" | "ACEITA" | "EM_ANDAMENTO" | "FINALIZADA";
+  proximoStatus?: "SOLICITADA" | "ACEITA" | "EM_ANDAMENTO" | "FINALIZADA" | null;
   versao: number;
   criadaEm: string;
   motoristaId: string | null;
@@ -14,12 +15,6 @@ type Perfil = "passageiro" | "motorista";
 type Usuario = { id: string; nome: string; email: string; perfil: Perfil };
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 type ModoAuth = "cadastro" | "login";
-const PROXIMO_STATUS: Partial<Record<Corrida["status"], Corrida["status"]>> = {
-  SOLICITADA: "ACEITA",
-  ACEITA: "EM_ANDAMENTO",
-  EM_ANDAMENTO: "FINALIZADA",
-};
-
 function idsDaSessao(): string[] {
   try {
     const stored: unknown = JSON.parse(sessionStorage.getItem("corridas.ids") ?? "[]");
@@ -104,7 +99,7 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, [consultar, idBusca, token]);
 
-  const proximoStatus = useMemo(() => corrida && PROXIMO_STATUS[corrida.status], [corrida]);
+  const proximoStatus = corrida?.proximoStatus ?? null;
 
   async function autenticar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
