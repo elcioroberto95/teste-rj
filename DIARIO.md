@@ -36,3 +36,4 @@ Tempo consumido: ainda não medido. Registrar o tempo real das próximas sessõe
 
 - 2026-10-15: Declaramos as transições de Corrida em uma tabela imutável por estado e adicionamos teste para caminho permitido e saltos inválidos. Build Docker da API passou; ensaio HTTP simultâneo de dois motoristas resultou em um aceite (200) e um conflito (409), confirmando AC12.
 - 2026-10-15: Reenviamos um evento já processado à fila RabbitMQ. A auditoria MongoDB permaneceu com um documento por event_id e Redis manteve a versão projetada; AC07 verificado via integração local.
+- 2026-10-15: AC08: a falha parcial revelou evento error Redis sem listener, que encerrava o worker. Adicionamos listener de conexão na composição, reconstruímos API/worker e repetimos o ensaio: auditoria MongoDB foi gravada com Redis parado; worker permaneceu ativo; após a volta do Redis, a reentrega atualizou o cache.

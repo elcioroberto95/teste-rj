@@ -21,6 +21,7 @@ async function main(): Promise<void> {
   const prisma = new PrismaService();
   const mongo = new MongoClient(mongoUrl);
   const redis = createClient({ url: redisUrl });
+  redis.on("error", (error) => console.error("Erro de conexão do Redis no worker", error));
   const connection = await amqp.connect(rabbitUrl);
   const channel = await connection.createConfirmChannel();
   await Promise.all([prisma.$connect(), mongo.connect(), redis.connect()]);

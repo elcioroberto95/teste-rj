@@ -113,8 +113,8 @@ workflow:
           evidence: "2026-10-15: evento reenviado ao RabbitMQ no Compose; MongoDB manteve 1 documento para o event_id e Redis ficou na versão do evento."
         - id: AC08
           description: "Reentrega recupera falha parcial entre gravação no MongoDB e atualização no Redis."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "2026-10-15: com Redis indisponível, MongoDB gravou a auditoria; worker continuou ativo, Redis voltou e a mensagem de retry convergiu a projeção."
         - id: AC09
           description: "Evento antigo e cache miss não regridem a versão armazenada no Redis; GET usa fallback MySQL."
           status: pending
