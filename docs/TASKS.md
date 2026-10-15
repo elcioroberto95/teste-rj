@@ -16,9 +16,9 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [ ] Implementar migrations MySQL, criação e idempotência transacional (AC05–06).
 - [ ] Implementar JWT, autorização e consulta por proprietário (AC01–02).
 - [ ] Implementar alteração de status, associação de motorista e concorrência (AC03, AC12).
-- [x] Implementar outbox/publicador, contratos e topologia RabbitMQ; definir retries limitados/DLQ (AC10). Falta validação integrada.
-- [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Falta validação integrada.
-- [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Falta validação integrada.
+- [x] Implementar outbox/publicador, contratos e topologia RabbitMQ; definir retries limitados/DLQ (AC10). Smoke saudável no Compose passou; falhas de publicação/retry cobertas por testes unitários.
+- [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Smoke saudável confirmou auditoria e projeção; reentrega/falha parcial cobertas por testes unitários.
+- [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Cache-aside e fallback permanecem com testes/validações anteriores.
 - [x] Adicionar testes unitários de criação e transições do domínio; integração HTTP e concorrência no banco pendentes.
 - [x] Implementar UI mínima e demonstrar fluxo básico (AC13). `localhost:3000/` serve UI HTTP 200 com cadastro/login; o proxy `/v1/health` e API direta em `localhost:3001/v1/health` respondem `status=ok`.
 - [ ] Validar visualmente no navegador o cadastro, login e logout da UI com contas dos dois perfis; API e proxy same-origin já foram exercitados via HTTP.
@@ -61,3 +61,10 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [x] Implementar GET /corridas/abertas, restricao por perfil e aceite pela UI.
 - [x] Validar listagem, aceite, remocao da fila e autorizacao por motorista via HTTP.
 - [ ] Revisar manualmente no navegador o cadastro, login, listagem e aceite pelo motorista.
+
+## Refatoração SOLID
+
+- [x] Separar portas de escrita/leitura de Corrida e remover dependência concreta das factories.
+- [x] Extrair porta/adaptador de outbox e confirmação RabbitMQ do relay.
+- [x] Separar processamento de projeção, auditoria, retry e topologia do consumidor.
+- [x] Validar com testes, lint, build e smoke test de MongoDB/Redis no Compose; evidências em docs/workflow.yaml e DIARIO.md.

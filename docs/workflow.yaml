@@ -201,7 +201,14 @@ workflow:
           description: "UI permite cadastro, login, logout e uso de ambos os perfis."
           status: pending
           evidence: null
-
+        - id: SOLID-001
+          description: "Factories de Corridas dependem de portas de leitura/escrita e cache, sem tipos concretos dos adaptadores."
+          status: verified
+          evidence: "CorridasModule injeta CORRIDA_COMMAND_REPOSITORY, CORRIDA_QUERY_REPOSITORY e CorridaCache; lint/build API passaram em 2026-10-14."
+        - id: SOLID-002
+          description: "OutboxRelay depende de portas de repositório e publisher; ProjectionConsumer trata entrega e delega processamento, retry e topologia."
+          status: verified
+          evidence: "Testes unitários cobrem confirmações, falhas, retries/DLQ e requeue; smoke test no Compose confirmou MongoDB e Redis em 2026-10-14."
     - id: operations
       name: Operação e observabilidade
       status: not_started

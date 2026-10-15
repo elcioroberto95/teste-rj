@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { criarCorrida } from "../domain/corrida.js";
 import type { Corrida } from "../domain/corrida.js";
-import type { CorridaRepository } from "./corrida.repository.js";
+import type { CorridaCommandRepository } from "./corrida.repository.js";
 
 export interface CriarCorridaCommand {
   passageiroId: string;
@@ -12,7 +12,7 @@ export interface CriarCorridaCommand {
 }
 
 export class CriarCorridaUseCase {
-  constructor(private readonly repository: CorridaRepository) {}
+  constructor(private readonly repository: CorridaCommandRepository) {}
 
   async execute(command: CriarCorridaCommand) {
     const origem = command.origem.trim();

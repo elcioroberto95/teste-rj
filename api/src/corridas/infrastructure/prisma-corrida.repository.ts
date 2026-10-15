@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { Prisma } from "../../generated/prisma/client.js";
 import { PrismaService } from "../../shared/database/prisma.service.js";
 import type {
-  CorridaRepository,
+  CorridaCommandRepository,
+  CorridaQueryRepository,
   CriarCorridaComIdempotencia,
   ResultadoCriacao,
 } from "../application/corrida.repository.js";
@@ -32,7 +33,7 @@ function toDomain(row: {
 }
 
 @Injectable()
-export class PrismaCorridaRepository implements CorridaRepository {
+export class PrismaCorridaRepository implements CorridaCommandRepository, CorridaQueryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async buscarPorId(id: string): Promise<Corrida | null> {

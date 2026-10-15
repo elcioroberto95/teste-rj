@@ -1,15 +1,9 @@
-import type { CorridaRepository } from "./corrida.repository.js";
-import type { StatusCorrida } from "../domain/corrida.js";
+import type { AlterarStatusCorridaInput, CorridaCommandRepository } from "./corrida.repository.js";
 
 export class AlterarStatusUseCase {
-  constructor(private readonly repository: CorridaRepository) {}
+  constructor(private readonly repository: CorridaCommandRepository) {}
 
-  execute(input: {
-    corridaId: string;
-    motoristaId: string;
-    novoStatus: StatusCorrida;
-    correlationId: string;
-  }) {
+  execute(input: AlterarStatusCorridaInput) {
     return this.repository.alterarStatus(input);
   }
 }

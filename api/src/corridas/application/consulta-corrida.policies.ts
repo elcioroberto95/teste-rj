@@ -1,5 +1,5 @@
 import type { CorridaCache } from "./corrida-cache.js";
-import type { CorridaRepository } from "./corrida.repository.js";
+import type { CorridaQueryRepository } from "./corrida.repository.js";
 import type { PoliticaConsultaCorrida } from "./consultar-corrida.use-case.js";
 import {
   AcessoCorridaNegadoError,
@@ -8,7 +8,7 @@ import {
 } from "../domain/corrida.js";
 
 export class ConsultarCorridaPassageiroPolicy implements PoliticaConsultaCorrida {
-  constructor(private readonly repository: CorridaRepository, private readonly cache: CorridaCache) {}
+  constructor(private readonly repository: CorridaQueryRepository, private readonly cache: CorridaCache) {}
 
   async execute(corridaId: string, usuarioId: string): Promise<Corrida> {
     let corrida: Corrida | null = null;
@@ -41,7 +41,7 @@ export class ConsultarCorridaPassageiroPolicy implements PoliticaConsultaCorrida
 }
 
 export class ConsultarCorridaMotoristaPolicy implements PoliticaConsultaCorrida {
-  constructor(private readonly repository: CorridaRepository) {}
+  constructor(private readonly repository: CorridaQueryRepository) {}
 
   async execute(corridaId: string, usuarioId: string): Promise<Corrida> {
     const corrida = await this.repository.buscarPorId(corridaId);

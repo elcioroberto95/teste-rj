@@ -3,8 +3,14 @@ import amqp from "amqplib";
 import { MongoClient } from "mongodb";
 import { createClient } from "redis";
 import { PrismaService } from "../shared/database/prisma.service.js";
-import { ProjectionConsumer, configurarTopologia } from "./projection-consumer.js";
+import { ProjectionConsumer } from "./projection-consumer.js";
 import { OutboxRelay } from "./outbox-relay.js";
+import { PrismaOutboxRepository } from "./infrastructure/prisma-outbox.repository.js";
+import { MongoEventoAuditRepository } from "./mongo-event-audit.repository.js";
+import { RedisCorridaProjection } from "./redis-corrida.projection.js";
+import { ProcessarEventoCorridaUseCase } from "./processar-evento-corrida.use-case.js";
+import { RabbitRetryPublisher } from "./rabbit-retry.publisher.js";
+import { configurarTopologia } from "./rabbitmq-topology.js";
 
 async function main(): Promise<void> {
   const rabbitUrl = process.env.RABBITMQ_URL;
@@ -20,30 +26,18 @@ async function main(): Promise<void> {
   await Promise.all([prisma.$connect(), mongo.connect(), redis.connect()]);
   await configurarTopologia(channel);
 
-  const consumer = new ProjectionConsumer(mongo.db(), redis, channel);
-  await consumer.initialize();
-  const relay = new OutboxRelay(prisma, channel);
+  const audit = new MongoEventoAuditRepository(mongo.db());
+  await audit.initialize();
+  const projection = new RedisCorridaProjection(redis);
+  const processarEvento = new ProcessarEventoCorridaUseCase(audit, projection);
+  const consumer = new ProjectionConsumer(processarEvento, new RabbitRetryPublisher(channel), channel);
+  const relay = new OutboxRelay(new PrismaOutboxRepository(prisma), channel);
   let stopping = false;
   const stop = () => { stopping = true; relay.stop(); };
   process.once("SIGINT", stop);
   process.once("SIGTERM", stop);
 
-  await channel.consume("corridas.projecoes", async (message) => {
-    if (!message) return;
-    try {
-      await consumer.apply(message.content);
-      channel.ack(message);
-    } catch (error) {
-      console.error("Falha ao projetar evento", error);
-      try {
-        await consumer.retryOrDeadLetter(message.content, message.properties.headers ?? {});
-        channel.ack(message);
-      } catch (publishError) {
-        console.error("Falha ao encaminhar evento para retry", publishError);
-        channel.nack(message, false, true);
-      }
-    }
-  }, { noAck: false });
+  await channel.consume("corridas.projecoes", (message) => consumer.handle(message), { noAck: false });
 
   const relayTask = relay.start();
   try {

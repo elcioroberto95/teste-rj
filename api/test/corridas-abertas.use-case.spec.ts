@@ -1,11 +1,11 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { ListarCorridasAbertasUseCase } from "../src/corridas/application/listar-corridas-abertas.use-case.js";
-import type { CorridaRepository } from "../src/corridas/application/corrida.repository.js";
+import type { CorridaQueryRepository } from "../src/corridas/application/corrida.repository.js";
 
 describe("ListarCorridasAbertasUseCase", () => {
   it("retorna corridas abertas e limita a consulta a no máximo 100", async () => {
-    const listarAbertas = jest.fn<CorridaRepository["listarAbertas"]>().mockResolvedValue([]);
-    const repository = { listarAbertas } as unknown as CorridaRepository;
+    const listarAbertas = jest.fn<CorridaQueryRepository["listarAbertas"]>().mockResolvedValue([]);
+    const repository = { listarAbertas } as CorridaQueryRepository;
     const useCase = new ListarCorridasAbertasUseCase(repository);
 
     await useCase.execute(500);
@@ -14,8 +14,8 @@ describe("ListarCorridasAbertasUseCase", () => {
   });
 
   it("usa o limite padrão de 50", async () => {
-    const listarAbertas = jest.fn<CorridaRepository["listarAbertas"]>().mockResolvedValue([]);
-    const repository = { listarAbertas } as unknown as CorridaRepository;
+    const listarAbertas = jest.fn<CorridaQueryRepository["listarAbertas"]>().mockResolvedValue([]);
+    const repository = { listarAbertas } as CorridaQueryRepository;
     const useCase = new ListarCorridasAbertasUseCase(repository);
 
     await useCase.execute();

@@ -1,6 +1,7 @@
 import type { Corrida } from "../domain/corrida.js";
 
-export const CORRIDA_REPOSITORY = Symbol("CORRIDA_REPOSITORY");
+export const CORRIDA_COMMAND_REPOSITORY = Symbol("CORRIDA_COMMAND_REPOSITORY");
+export const CORRIDA_QUERY_REPOSITORY = Symbol("CORRIDA_QUERY_REPOSITORY");
 
 export interface CriarCorridaComIdempotencia {
   corrida: Corrida;
@@ -14,14 +15,19 @@ export interface ResultadoCriacao {
   repetida: boolean;
 }
 
-export interface CorridaRepository {
+export interface AlterarStatusCorridaInput {
+  corridaId: string;
+  motoristaId: string;
+  novoStatus: Corrida["status"];
+  correlationId: string;
+}
+
+export interface CorridaCommandRepository {
   criarComIdempotencia(input: CriarCorridaComIdempotencia): Promise<ResultadoCriacao>;
+  alterarStatus(input: AlterarStatusCorridaInput): Promise<Corrida>;
+}
+
+export interface CorridaQueryRepository {
   buscarPorId(id: string): Promise<Corrida | null>;
   listarAbertas(limite: number): Promise<Corrida[]>;
-  alterarStatus(input: {
-    corridaId: string;
-    motoristaId: string;
-    novoStatus: Corrida["status"];
-    correlationId: string;
-  }): Promise<Corrida>;
 }
