@@ -32,6 +32,7 @@ import {
 } from "../domain/corrida.js";
 import { CriarCorridaDto } from "./criar-corrida.dto.js";
 import { AlterarStatusDto } from "./alterar-status.dto.js";
+import { ListarCorridasAbertasUseCase } from "../application/listar-corridas-abertas.use-case.js";
 
 function rethrowHttpError(error: unknown): never {
   if (error instanceof CorridaNaoEncontradaError) throw new NotFoundException(error.message);
@@ -59,6 +60,7 @@ export class CorridasController {
     private readonly criarCorrida: CriarCorridaUseCase,
     private readonly consultarCorrida: ConsultarCorridaUseCase,
     private readonly alterarStatus: AlterarStatusUseCase,
+    private readonly listarCorridasAbertas: ListarCorridasAbertasUseCase,
   ) {}
 
   @Post()
@@ -86,14 +88,20 @@ export class CorridasController {
     }
   }
 
+  @Get("abertas")
+  @Perfis("motorista")
+  listarAbertas() {
+    return this.listarCorridasAbertas.execute();
+  }
+
   @Get(":id")
-  @Perfis("passageiro")
+  @Perfis("passageiro", "motorista")
   async consultar(
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @Param("id", new ParseUUIDPipe({ version: "4" })) corridaId: string,
   ) {
     try {
-      return await this.consultarCorrida.execute(corridaId, usuario.sub);
+      return await this.consultarCorrida.execute(corridaId, usuario.sub, usuario.role);
     } catch (error) {
       rethrowHttpError(error);
     }

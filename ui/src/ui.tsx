@@ -50,6 +50,7 @@ export default function App() {
   const [ids, setIds] = useState(idsDaSessao);
   const [idBusca, setIdBusca] = useState(ids[0] ?? "");
   const [corrida, setCorrida] = useState<Corrida | null>(null);
+  const [corridasAbertas, setCorridasAbertas] = useState<Corrida[]>([]);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
@@ -77,6 +78,25 @@ export default function App() {
       setNotice({ kind: "error", text: error instanceof Error ? error.message : "Não foi possível consultar." });
     }
   }, [api, token]);
+
+  const carregarCorridasAbertas = useCallback(async (quiet = false) => {
+    if (!token.trim() || perfil !== "motorista") return;
+    try {
+      setCorridasAbertas(await api<Corrida[]>("/corridas/abertas"));
+    } catch (error) {
+      if (!quiet) setNotice({ kind: "error", text: error instanceof Error ? error.message : "Falha ao carregar corridas abertas." });
+    }
+  }, [api, perfil, token]);
+
+  useEffect(() => {
+    if (!token.trim() || perfil !== "motorista") {
+      setCorridasAbertas([]);
+      return;
+    }
+    void carregarCorridasAbertas(true);
+    const timer = window.setInterval(() => void carregarCorridasAbertas(true), 5000);
+    return () => window.clearInterval(timer);
+  }, [carregarCorridasAbertas, perfil, token]);
 
   useEffect(() => {
     if (!idBusca || !token.trim()) return;
@@ -106,6 +126,10 @@ export default function App() {
       setToken(body.accessToken);
       setUsuario(authenticatedUser);
       setPerfil(authenticatedUser.perfil);
+      setCorrida(null);
+      setIdBusca("");
+      setIds([]);
+      sessionStorage.removeItem("corridas.ids");
       setSenha("");
       setNotice({ kind: "success", text: cadastro ? "Conta criada e sessão iniciada." : "Login realizado." });
     } catch (error) {
@@ -119,6 +143,7 @@ export default function App() {
     setToken("");
     setUsuario(null);
     setCorrida(null);
+    setCorridasAbertas([]);
     setNotice({ kind: "success", text: "Sessão encerrada." });
   }
 
@@ -165,6 +190,25 @@ export default function App() {
     }
   }
 
+  async function aceitarCorrida(item: Corrida) {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const accepted = await api<Corrida>(`/corridas/${item.id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "ACEITA" }),
+      });
+      setCorrida(accepted);
+      setIdBusca(accepted.id);
+      setNotice({ kind: "success", text: "Corrida aceita e vinculada ao seu usuario." });
+    } catch (error) {
+      setNotice({ kind: "error", text: error instanceof Error ? error.message : "Falha ao aceitar a corrida." });
+    } finally {
+      await carregarCorridasAbertas(true);
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="shell">
       <header className="topbar">
@@ -203,6 +247,10 @@ export default function App() {
 
       <div className="workspace">
         <section className="card create-card">
+          {perfil === "motorista" ? <>
+            <div className="card-heading"><span className="step-number">02</span><div><p className="eyebrow">CORRIDAS DISPON&Iacute;VEIS</p><h2>Corridas abertas</h2></div><span className="version-tag">{corridasAbertas.length}</span></div>
+            {corridasAbertas.length ? <div className="open-rides-list">{corridasAbertas.map((item) => <article className="open-ride-item" key={item.id}><div className="journey"><div className="journey-point"><span className="point-dot origin-dot" /><div><span className="summary-label">ORIGEM</span><strong>{item.origem}</strong></div></div><span className="journey-connector" /><div className="journey-point"><span className="point-dot destination-dot" /><div><span className="summary-label">DESTINO</span><strong>{item.destino}</strong></div></div></div><button className="primary-button" disabled={busy} onClick={() => void aceitarCorrida(item)} type="button">Aceitar corrida <span aria-hidden="true">→</span></button></article>)}</div> : <div className="empty-state"><strong>Nenhuma corrida aberta agora.</strong><span>Novas solicita&ccedil;&otilde;es aparecem aqui automaticamente.</span></div>}
+          </> : <>
           <div className="card-heading"><span className="step-number">02</span><div><p className="eyebrow">NOVA SOLICITAÇÃO</p><h2>Para onde vamos?</h2></div></div>
           <form onSubmit={criar}>
             <label className="input-field"><span>Origem</span><input required maxLength={500} value={origem} onChange={(e) => setOrigem(e.target.value)} placeholder="Ex.: Praça XV, Centro" /></label>
@@ -211,6 +259,7 @@ export default function App() {
             {perfil !== "passageiro" && <p className="form-hint">Selecione Passageiro para criar uma solicitação.</p>}
           </form>
           {ids.length > 0 && <div className="session-list"><div className="list-heading"><span>CRIADAS NESTA SESSÃO</span><span>{String(ids.length).padStart(2, "0")}</span></div>{ids.map((id, index) => <button className={`session-item ${id === idBusca ? "active" : ""}`} key={id} onClick={() => { setIdBusca(id); void consultar(id); }} type="button"><span className="session-index">{String(index + 1).padStart(2, "0")}</span><code>{id}</code><span className="item-arrow">↗</span></button>)}</div>}
+          </>}
         </section>
 
         <section className="card tracking-card">

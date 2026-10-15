@@ -7,6 +7,11 @@ import { PrismaCorridaRepository } from "./infrastructure/prisma-corrida.reposit
 import { CorridasController } from "./presentation/corridas.controller.js";
 import { RedisCorridaCache } from "./infrastructure/redis-corrida-cache.js";
 import { CORRIDA_CACHE } from "./application/corrida-cache.js";
+import { ListarCorridasAbertasUseCase } from "./application/listar-corridas-abertas.use-case.js";
+import {
+  ConsultarCorridaMotoristaPolicy,
+  ConsultarCorridaPassageiroPolicy,
+} from "./application/consulta-corrida.policies.js";
 
 @Module({
   controllers: [CorridasController],
@@ -23,12 +28,20 @@ import { CORRIDA_CACHE } from "./application/corrida-cache.js";
     {
       provide: ConsultarCorridaUseCase,
       useFactory: (repository: PrismaCorridaRepository, cache: RedisCorridaCache) =>
-        new ConsultarCorridaUseCase(repository, cache),
+        new ConsultarCorridaUseCase({
+          passageiro: new ConsultarCorridaPassageiroPolicy(repository, cache),
+          motorista: new ConsultarCorridaMotoristaPolicy(repository),
+        }),
       inject: [CORRIDA_REPOSITORY, CORRIDA_CACHE],
     },
     {
       provide: AlterarStatusUseCase,
       useFactory: (repository: PrismaCorridaRepository) => new AlterarStatusUseCase(repository),
+      inject: [CORRIDA_REPOSITORY],
+    },
+    {
+      provide: ListarCorridasAbertasUseCase,
+      useFactory: (repository: PrismaCorridaRepository) => new ListarCorridasAbertasUseCase(repository),
       inject: [CORRIDA_REPOSITORY],
     },
   ],

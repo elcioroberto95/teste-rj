@@ -140,6 +140,27 @@ workflow:
           status: pending
           evidence: null
 
+        - id: DRV-01
+          description: "Motorista lista corridas solicitadas sem motorista associado."
+          status: verified
+          evidence: "Fluxo HTTP no Compose em 2026-10-14: corrida criada por passageiro retornou na fila do motorista."
+        - id: DRV-02
+          description: "Passageiro nao acessa a fila restrita ao motorista."
+          status: verified
+          evidence: "Fluxo HTTP no Compose em 2026-10-14: passageiro recebeu 403 ao consultar a fila."
+        - id: DRV-03
+          description: "Motorista aceita pela UI e acompanha corrida associada a si."
+          status: pending
+          evidence: "API aceitou e retornou detalhes vinculados ao motorista; revisao manual da UI pendente."
+        - id: DRV-04
+          description: "Corrida aceita desaparece da fila aberta."
+          status: verified
+          evidence: "Fluxo HTTP no Compose em 2026-10-14: corrida aceita nao apareceu na consulta seguinte da fila."
+        - id: DRV-05
+          description: "Motorista nao consulta corrida associada a outro motorista."
+          status: verified
+          evidence: "Fluxo HTTP no Compose em 2026-10-14: motorista diferente recebeu 403 ao consultar detalhes."
+
         - id: AUTH-01
           description: "JwtGuard retorna 401 para ausência, invalidade e expiração de token e para claims inválidas."
           status: verified

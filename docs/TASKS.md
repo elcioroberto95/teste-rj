@@ -54,3 +54,10 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 - [x] Executar os testes isolados `api/test/jwt.guard.spec.ts`; passaram junto aos testes de domínio (15 testes, 2 suítes).
 - [x] Validar AC01/AC02: testes JwtGuard e fluxo HTTP com consulta do proprietário e rejeição 403 para outro passageiro.
 - [x] Implementar cadastro e login para passageiros e motoristas, persistência MySQL, senha scrypt e JWT de sessão; API integrada validada para ambos os perfis. Revisão manual dos formulários da UI pendente.
+
+## Fila de corridas para motoristas
+
+- [x] Especificar a listagem e o aceite em specs/007-listagem-corridas-motoristas.md.
+- [x] Implementar GET /corridas/abertas, restricao por perfil e aceite pela UI.
+- [x] Validar listagem, aceite, remocao da fila e autorizacao por motorista via HTTP.
+- [ ] Revisar manualmente no navegador o cadastro, login, listagem e aceite pelo motorista.

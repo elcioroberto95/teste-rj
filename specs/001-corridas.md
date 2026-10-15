@@ -17,7 +17,7 @@ As escolhas abaixo são interpretações propostas para lacunas do enunciado. Al
 - Aceitar associa a corrida ao motorista autenticado. Somente esse motorista pode iniciar/finalizar; outro motorista recebe 403.
 - Mudanças concorrentes usam controle de versão no MySQL: apenas uma transição concorrente sobre a mesma versão pode vencer.
 - Passageiro cria em seu próprio nome e consulta apenas suas corridas. O identificador do passageiro vem de `sub`, nunca do corpo.
-- Motorista altera status; não pode criar corrida. Leitura de detalhes fica restrita ao passageiro proprietário nesta versão.
+- Motorista altera status; não pode criar corrida. Passageiro consulta apenas corrida própria; motorista consulta a fila aberta e detalhes somente após estar associado à corrida. Ver `specs/007-listagem-corridas-motoristas.md`.
 
 ## Contrato HTTP proposto
 
@@ -26,7 +26,8 @@ JWT assinado RS256, validado com algoritmo permitido explícito, expiração, em
 | Endpoint | Entrada | Sucesso | Falhas relevantes |
 | --- | --- | --- | --- |
 | `POST /corridas` | `Idempotency-Key`; `{ origem, destino }`, strings não vazias | 201; corrida com `id`, `status`, `versao` | 400 entrada/chave ausente; 401 JWT; 403 perfil; 409 chave com outro corpo |
-| `GET /corridas/:id` | JWT do proprietário | 200; estado atual | 401 JWT; 403 propriedade/perfil; 404 inexistente |
+| `GET /corridas/abertas` | JWT motorista | 200; corridas `SOLICITADA` sem motorista | 401 JWT; 403 perfil |
+| `GET /corridas/:id` | JWT do passageiro proprietário ou motorista associado | 200; estado atual | 401 JWT; 403 propriedade/perfil; 404 inexistente |
 | `PATCH /corridas/:id/status` | `{ status }`; JWT motorista | 200; corrida atualizada | 400 entrada; 401 JWT; 403 perfil/motorista; 404 inexistente; 409 transição/conflito |
 
 Idempotência do POST tem escopo `(passageiro, chave)`. A mesma chave e o mesmo corpo retornam o mesmo ID e resposta de criação, sem novo evento de criação. O mesmo par com corpo diferente retorna 409. Restrição única e transação no MySQL garantem também o caso concorrente.

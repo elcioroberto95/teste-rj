@@ -40,6 +40,15 @@ export class PrismaCorridaRepository implements CorridaRepository {
     return corrida ? toDomain(corrida) : null;
   }
 
+  async listarAbertas(limite: number): Promise<Corrida[]> {
+    const corridas = await this.prisma.corrida.findMany({
+      where: { status: "SOLICITADA", motoristaId: null },
+      orderBy: { criadaEm: "asc" },
+      take: limite,
+    });
+    return corridas.map(toDomain);
+  }
+
   async alterarStatus(input: {
     corridaId: string;
     motoristaId: string;

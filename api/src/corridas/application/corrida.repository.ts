@@ -17,6 +17,7 @@ export interface ResultadoCriacao {
 export interface CorridaRepository {
   criarComIdempotencia(input: CriarCorridaComIdempotencia): Promise<ResultadoCriacao>;
   buscarPorId(id: string): Promise<Corrida | null>;
+  listarAbertas(limite: number): Promise<Corrida[]>;
   alterarStatus(input: {
     corridaId: string;
     motoristaId: string;
