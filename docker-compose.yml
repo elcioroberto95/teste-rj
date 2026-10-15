@@ -23,6 +23,9 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: corridas
       RABBITMQ_DEFAULT_PASS: desenvolvimento
+    command: ["sh", "-c", "rabbitmq-plugins enable rabbitmq_prometheus && rabbitmq-server"]
+    expose:
+      - "15692"
     ports:
       - "127.0.0.1:5672:5672"
       - "127.0.0.1:15672:15672"
@@ -100,6 +103,8 @@ services:
       context: ./api
       dockerfile: Dockerfile
     command: ["npm", "run", "start:worker"]
+    expose:
+      - "3002"
     environment:
       DATABASE_URL: mysql://corridas:desenvolvimento@mysql:3306/corridas
       RABBITMQ_URL: amqp://corridas:desenvolvimento@rabbitmq:5672
@@ -122,10 +127,12 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
     ports:
       - "127.0.0.1:9090:9090"
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheus-data:/prometheus
     networks: [corridas]
 

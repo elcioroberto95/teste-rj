@@ -2,6 +2,7 @@ import type { EventoCorrida } from "../../contracts/event-envelope.js";
 import type { ConfirmPublisher } from "../../messaging/confirm-publisher.js";
 import type { OutboxRepository } from "./outbox.repository.js";
 import { camposDoErro, logJson } from "../../../shared/observability/json-log.js";
+import { incrementarMetrica } from "../../../shared/observability/metrics.js";
 
 export class OutboxRelay {
   private running = false;
@@ -39,9 +40,13 @@ export class OutboxRelay {
         });
         await this.publisher.waitForConfirms();
         await this.outbox.marcarPublicado(row.id, new Date());
+        incrementarMetrica("outbox_events_published_total", "Eventos publicados pela outbox", {
+          event_type: row.tipo,
+        });
         logJson("info", "worker", "outbox_event_published", context);
         published += 1;
       } catch (error) {
+        incrementarMetrica("outbox_delivery_failures_total", "Falhas de entrega da outbox");
         logJson("error", "worker", "outbox_event_publish_failed", {
           ...context,
           ...camposDoErro(error),

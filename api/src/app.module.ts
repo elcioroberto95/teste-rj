@@ -5,9 +5,10 @@ import { JwtGuard } from "./shared/auth/jwt.guard.js";
 import { PrismaModule } from "./shared/database/prisma.module.js";
 import { HealthController } from "./health.controller.js";
 import { AuthModule } from "./auth/auth.module.js";
+import { MetricsController } from "./shared/observability/metrics.controller.js";
 
 @Module({
-  controllers: [HealthController],
+  controllers: [HealthController, MetricsController],
   imports: [PrismaModule, CorridasModule, AuthModule],
   providers: [{ provide: APP_GUARD, useClass: JwtGuard }],
 })

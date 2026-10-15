@@ -1,6 +1,6 @@
 # 008 — Operação e observabilidade
 
-Estado: implementação de OPS-01 iniciada; validação integrada pendente.
+Estado: implementação de logs, métricas, coleta Prometheus, alertas e cenário k6 preparada; tracing distribuído e validações integradas pendentes.
 
 ## Objetivo
 

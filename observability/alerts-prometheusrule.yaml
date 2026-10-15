@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: corridas-availability
+  namespace: monitoring
+spec:
+  groups:
+    - name: corridas-availability
+      rules:
+        - alert: HighHttpServerErrorRatio
+          expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(http_requests_total[5m])), 1e-9) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A API mantém mais de 5% de respostas 5xx"
+            description: "Verifique dependências, logs do serviço e erros HTTP; o limite é um gatilho operacional inicial, não um SLO medido."
+        - alert: OutboxDeliveryFailures
+          expr: increase(outbox_delivery_failures_total[5m]) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "O relay falhou ao entregar eventos da outbox"
+            description: "Verifique RabbitMQ e a conectividade do worker; falha de publicação pode atrasar a projeção."

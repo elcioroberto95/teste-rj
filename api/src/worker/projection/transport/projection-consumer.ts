@@ -3,6 +3,7 @@ import type { ProcessarEventoCorridaUseCase } from "../application/processar-eve
 import type { RetryPublisher } from "../application/projection-ports.js";
 import { validarEvento } from "../../contracts/event-envelope.js";
 import { camposDoErro, logJson } from "../../../shared/observability/json-log.js";
+import { incrementarMetrica } from "../../../shared/observability/metrics.js";
 
 export class ProjectionConsumer {
   constructor(
@@ -23,6 +24,9 @@ export class ProjectionConsumer {
       event = validarEvento(JSON.parse(message.content.toString("utf8")));
       await this.processarEvento.execute(event);
       this.channel.ack(message);
+      incrementarMetrica("corrida_events_processed_total", "Eventos de corrida projetados com sucesso", {
+        event_type: event.event_type,
+      });
       logJson("info", "worker", "projection_event_processed", {
         event_id: event.event_id,
         event_type: event.event_type,
@@ -31,6 +35,7 @@ export class ProjectionConsumer {
         aggregate_version: event.aggregate_version,
       });
     } catch (error) {
+      incrementarMetrica("corrida_events_failed_total", "Falhas ao processar eventos de corrida");
       const context = event
         ? {
             event_id: event.event_id,
@@ -47,6 +52,7 @@ export class ProjectionConsumer {
       try {
         await this.retryPublisher.encaminhar(message.content, message.properties.headers ?? {});
         this.channel.ack(message);
+        incrementarMetrica("corrida_events_retry_total", "Eventos encaminhados para retry");
         logJson("warn", "worker", "projection_event_sent_to_retry", context);
       } catch (publishError) {
         logJson("error", "worker", "projection_retry_publish_failed", {

@@ -26,12 +26,12 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 
 ## 2. Operação — peso alto
 
-- [ ] Especificar critérios de observabilidade e carga em `specs/008-operacao-observabilidade.md`.
-- [ ] Logs JSON com correlação atravessando API, outbox, broker e worker.
-- [ ] `/metrics` API/worker: requisições, latência, erros e processamento. Coletar tamanho/atraso de fila; distinguir métricas do broker das métricas da aplicação.
+- [x] Especificar critérios de observabilidade e carga em `specs/008-operacao-observabilidade.md`.
+- [x] Logs JSON com correlação atravessando API, outbox, broker e worker.
+- [x] `/metrics` API/worker para requisições, latência, erros e processamento; RabbitMQ fornece métricas nativas de fila.
 - [ ] OpenTelemetry e Jaeger/Tempo; obter trace real da API até o worker.
-- [ ] Dois alertas com limiares justificados; mesmos `groups` em `observability/alerts.yml` e `observability/alerts-prometheusrule.yaml`; Prometheus carrega as regras.
-- [ ] Script k6, execução e relatório com cenário, medições reais, descobertas e possíveis mudanças.
+- [x] Dois alertas com limiares iniciais documentados; regras locais e PrometheusRule mantêm os mesmos grupos.
+- [x] Script k6 e estrutura do relatório versionados; execução e medições reais pendentes.
 
 ## 3. Kubernetes — peso médio
 

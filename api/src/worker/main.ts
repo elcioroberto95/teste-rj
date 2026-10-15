@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { createServer } from "node:http";
 import amqp, { type ChannelModel, type ConfirmChannel } from "amqplib";
 import { MongoClient } from "mongodb";
 import { createClient } from "redis";
@@ -12,6 +13,7 @@ import { ProcessarEventoCorridaUseCase } from "./projection/application/processa
 import { RabbitRetryPublisher } from "./projection/infrastructure/rabbit-retry.publisher.js";
 import { configurarTopologia } from "./projection/infrastructure/rabbitmq-topology.js";
 import { camposDoErro, logJson } from "../shared/observability/json-log.js";
+import { renderizarMetricas } from "../shared/observability/metrics.js";
 
 const esperar = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -31,6 +33,23 @@ async function main(): Promise<void> {
   });
   await Promise.all([prisma.$connect(), mongo.connect(), redis.connect()]);
   logJson("info", "worker", "worker_dependencies_connected");
+  const metricsPort = Number(process.env.METRICS_PORT ?? 3002);
+  const metricsServer = createServer((request, response) => {
+    if (request.method !== "GET" || request.url !== "/metrics") {
+      response.writeHead(404).end();
+      return;
+    }
+    response.writeHead(200, { "content-type": "text/plain; version=0.0.4; charset=utf-8" });
+    response.end(renderizarMetricas());
+  });
+  await new Promise<void>((resolve, reject) => {
+    metricsServer.once("error", reject);
+    metricsServer.listen(metricsPort, "0.0.0.0", () => {
+      metricsServer.removeListener("error", reject);
+      resolve();
+    });
+  });
+  logJson("info", "worker", "worker_metrics_server_started", { port: metricsPort });
 
   const audit = new MongoEventoAuditRepository(mongo.db());
   await audit.initialize();
@@ -100,7 +119,12 @@ async function main(): Promise<void> {
       }
     }
   } finally {
-    await Promise.all([prisma.$disconnect(), mongo.close(), redis.quit()]);
+    await Promise.all([
+      new Promise<void>((resolve) => metricsServer.close(() => resolve())),
+      prisma.$disconnect(),
+      mongo.close(),
+      redis.quit(),
+    ]);
   }
 }
 
