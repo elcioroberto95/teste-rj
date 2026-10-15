@@ -6,6 +6,7 @@ export interface EventoCorrida {
   schema_version: number;
   occurred_at: string;
   correlation_id: string;
+  traceparent?: string;
   corrida_id: string;
   aggregate_version: number;
   payload: {
@@ -64,6 +65,7 @@ export function validarEvento(value: unknown): EventoCorrida {
     typeof value.schema_version !== "number" ||
     typeof value.occurred_at !== "string" ||
     typeof value.correlation_id !== "string" ||
+    (value.traceparent !== undefined && typeof value.traceparent !== "string") ||
     typeof value.corrida_id !== "string" ||
     typeof value.aggregate_version !== "number" ||
     !payload ||
@@ -77,6 +79,7 @@ export function validarEvento(value: unknown): EventoCorrida {
     schema_version: value.schema_version,
     occurred_at: value.occurred_at,
     correlation_id: value.correlation_id,
+    ...(typeof value.traceparent === "string" ? { traceparent: value.traceparent } : {}),
     corrida_id: value.corrida_id,
     aggregate_version: value.aggregate_version,
     payload,

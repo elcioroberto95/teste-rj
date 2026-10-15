@@ -16,6 +16,7 @@ export class PrismaOutboxRepository implements OutboxRepository {
       versaoSchema: row.versaoSchema,
       ocorridoEm: row.ocorridoEm,
       correlationId: row.correlationId,
+      traceparent: row.traceparent,
       corridaId: row.corridaId,
       versaoAgregado: row.versaoAgregado,
       payload: row.payload,

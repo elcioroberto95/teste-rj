@@ -2,12 +2,17 @@ import type { NextFunction, Request, Response } from "express";
 import { normalizarCorrelationId } from "./correlation-id.js";
 import { logJson } from "./json-log.js";
 import { incrementarMetrica, observarDuracao } from "./metrics.js";
+import { context, propagation } from "@opentelemetry/api";
 
 export function registrarAcessoHttp(request: Request, response: Response, next: NextFunction): void {
   const correlationId = normalizarCorrelationId(request.headers["x-correlation-id"]);
   const inicio = process.hrtime.bigint();
   request.headers["x-correlation-id"] = correlationId;
   response.setHeader("x-correlation-id", correlationId);
+  const traceCarrier: Record<string, string> = {};
+  propagation.inject(context.active(), traceCarrier);
+  const traceparent = traceCarrier.traceparent;
+  if (traceparent) request.headers["x-traceparent"] = traceparent;
 
   response.once("finish", () => {
     const durationMs = Number(process.hrtime.bigint() - inicio) / 1_000_000;

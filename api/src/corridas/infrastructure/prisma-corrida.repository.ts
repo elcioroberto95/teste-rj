@@ -5,6 +5,7 @@ import { PrismaService } from "../../shared/database/prisma.service.js";
 import type {
   CorridaCommandRepository,
   CorridaQueryRepository,
+  AlterarStatusCorridaInput,
   CriarCorridaComIdempotencia,
   ResultadoCriacao,
 } from "../application/ports/corrida.repository.js";
@@ -52,12 +53,7 @@ export class PrismaCorridaRepository implements CorridaCommandRepository, Corrid
     return corridas.map(toDomain);
   }
 
-  async alterarStatus(input: {
-    corridaId: string;
-    motoristaId: string;
-    novoStatus: Corrida["status"];
-    correlationId: string;
-  }): Promise<Corrida> {
+  async alterarStatus(input: AlterarStatusCorridaInput): Promise<Corrida> {
     return this.prisma.$transaction(async (tx) => {
       const existente = await tx.corrida.findUnique({ where: { id: input.corridaId } });
       if (!existente) throw new CorridaNaoEncontradaError();
@@ -103,6 +99,7 @@ export class PrismaCorridaRepository implements CorridaCommandRepository, Corrid
           versaoSchema: 1,
           ocorridoEm: new Date(),
           correlationId: input.correlationId,
+          traceparent: input.traceparent ?? null,
           corridaId: corridaAtualizada.id,
           versaoAgregado: corridaAtualizada.versao,
           payload: corridaAtualizada as unknown as Prisma.InputJsonValue,
@@ -160,6 +157,7 @@ export class PrismaCorridaRepository implements CorridaCommandRepository, Corrid
             versaoSchema: 1,
             ocorridoEm: resposta.criadaEm,
             correlationId: input.correlationId,
+            traceparent: input.traceparent ?? null,
             corridaId: resposta.id,
             versaoAgregado: resposta.versao,
             payload: resposta as unknown as Prisma.InputJsonValue,

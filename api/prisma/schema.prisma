@@ -64,6 +64,7 @@ model EventoOutbox {
   versaoSchema     Int
   ocorridoEm       DateTime @db.DateTime(3)
   correlationId    String   @db.VarChar(100)
+  traceparent      String?  @db.VarChar(55)
   corridaId        String   @db.Char(36)
   versaoAgregado   Int
   payload          Json

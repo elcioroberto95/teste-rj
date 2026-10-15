@@ -8,6 +8,7 @@ export interface CriarCorridaComIdempotencia {
   chave: string;
   hashRequisicao: string;
   correlationId: string;
+  traceparent?: string;
 }
 
 export interface ResultadoCriacao {
@@ -20,6 +21,7 @@ export interface AlterarStatusCorridaInput {
   motoristaId: string;
   novoStatus: Corrida["status"];
   correlationId: string;
+  traceparent?: string;
 }
 
 export interface CorridaCommandRepository {

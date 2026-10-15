@@ -6,6 +6,7 @@ export interface OutboxRecord {
   versaoSchema: number;
   ocorridoEm: Date;
   correlationId: string;
+  traceparent?: string | null;
   corridaId: string;
   versaoAgregado: number;
   payload: unknown;

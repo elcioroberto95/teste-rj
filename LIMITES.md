@@ -7,17 +7,18 @@ Estado revisado em 2026-10-15. Consulte [docs/workflow.yaml](docs/workflow.yaml)
 - API NestJS e UI React com cadastro/login, perfis passageiro/motorista e fluxo de corridas.
 - Worker Node em diretório e imagem próprios; outbox MySQL, RabbitMQ, auditoria MongoDB e projeção Redis.
 - Regra de uma corrida ativa por motorista, inclusive disputa concorrente validada anteriormente no Compose.
-- Compose válido; imagens API e worker construídas após a instrumentação.
+- Compose válido; build da nova imagem do worker passou após a reorganização.
 - API, worker e RabbitMQ coletados no Prometheus; targets ativos; endpoint da API respondeu HTTP 200.
 - Dois alertas carregados no Prometheus.
 - Um smoke HTTP confirmou `correlation_id` entre o header recebido/devolvido e o log JSON da API.
+- OpenTelemetry configurado na API e no worker; `traceparent` é salvo na outbox, e Jaeger recebe OTLP/HTTP. Builds das duas imagens passaram; trace integrado ainda não foi observado.
 
 ## Pendente
 
-- Trace OpenTelemetry percorrendo API, RabbitMQ e worker.
+- Smoke de trace OpenTelemetry percorrendo API, outbox, RabbitMQ e worker.
 - Validação da mesma correlação de ponta a ponta até a projeção.
 - Execução k6 e relatório com medidas reais.
-- Executar novamente lint e suíte de testes depois da reorganização dos arquivos do worker. O build da imagem Docker do worker já passou.
+- Executar lint e suíte de testes depois da reorganização dos arquivos do worker.
 - Revisão manual da UI no navegador e execução remota do GitHub Actions.
 - Manifestos Kubernetes, vídeo de apresentação e atualização final de documentação para entrega.
 

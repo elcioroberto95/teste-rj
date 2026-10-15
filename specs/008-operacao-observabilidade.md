@@ -11,6 +11,8 @@ Permitir acompanhar uma requisição desde a API até a publicação do evento e
 - Logs de aplicação são JSON por linha, com `timestamp`, `level`, `service` e `message`.
 - A API aceita `x-correlation-id` somente quando contém 1–100 caracteres alfanuméricos, ponto, hífen ou sublinhado. Se ausente ou inválido, gera UUID; retorna o valor efetivo no mesmo header.
 - O correlation ID acompanha a mudança persistida na outbox, o envelope AMQP e os logs de publicação e consumo. Logs não incluem token, senha, hash de senha ou payload completo.
+- O contexto W3C `traceparent` da requisição é persistido junto ao evento na outbox. O relay cria o span produtor sob esse contexto; a instrumentação do AMQP propaga o contexto para o span consumidor no worker.
+- Jaeger all-in-one recebe OTLP/HTTP em `jaeger:4318` e fornece a interface local em `http://localhost:16686`; o armazenamento em memória é apenas para desenvolvimento.
 - API e worker expõem `/metrics` no formato Prometheus. Métricas incluem volume, duração e erros HTTP; o worker expõe processamento, retries e falhas/DLQ. Métricas da aplicação não substituem métricas nativas do RabbitMQ.
 - A configuração local coleta métricas da API, worker e RabbitMQ. Alertas terão limiares definidos com base em comportamento observado, não em valores apresentados como medidos sem execução.
 - O teste de carga registra cenário, configuração, ambiente, resultados reais e limitações; não há promessa de throughput antes da medição.

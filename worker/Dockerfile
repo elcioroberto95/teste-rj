@@ -10,6 +10,7 @@ COPY api/tsconfig.json ./api/tsconfig.json
 COPY api/src/shared ./api/src/shared
 COPY api/src/corridas/domain ./api/src/corridas/domain
 COPY worker ./worker
+RUN ln -s /app/api/node_modules /app/node_modules
 RUN cd api && npm run db:generate && npm run build:worker
 
 FROM node:24-bookworm-slim

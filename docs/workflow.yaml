@@ -224,7 +224,7 @@ workflow:
         - id: SOLID-003
           description: "Worker organizado por fluxo (outbox e projeção), com contratos, infraestrutura e testes fáceis de localizar."
           status: verified
-          evidence: "worker/src/outbox e projection; testes em worker/test; build separado por worker/tsconfig.json e imagem worker/Dockerfile; README e WORKFLOW.md alinhados. docker compose config --quiet passou em 2026-10-15; build da nova imagem pendente após falha do BuildKit."
+          evidence: "worker/src/outbox e projection; testes em worker/test; build separado por worker/tsconfig.json e imagem worker/Dockerfile; README e WORKFLOW.md alinhados. docker compose config --quiet e docker compose build worker passaram em 2026-10-15."
         - id: SOLID-004
           description: "Camadas de Auth e Corridas separam casos de uso, portas e adaptadores de infraestrutura."
           status: verified
@@ -241,7 +241,7 @@ workflow:
         - id: OPS-001
           description: "Logs JSON propagam correlation_id entre API, broker e worker."
           status: pending
-          evidence: "Implementado nos três pontos. Smoke 2026-10-15 confirmou header e log JSON HTTP com correlation_id; jornada correlacionada até outbox/broker/worker ainda pendente."
+          evidence: "Logs propagam correlation_id. Em 2026-10-15 adicionamos persistência de W3C traceparent na outbox e instrumentação do relay/AMQP; builds API/worker passaram, mas a jornada real correlacionada ainda aguarda smoke final."
         - id: OPS-002
           description: "API e worker expõem métricas Prometheus de requisições, latência, erros e fila."
           status: verified
@@ -249,7 +249,7 @@ workflow:
         - id: OPS-003
           description: "Um trace observado percorre API, RabbitMQ e worker."
           status: pending
-          evidence: null
+          evidence: "SDK OpenTelemetry Node com auto-instrumentação HTTP/AMQP e Jaeger OTLP/HTTP configurados; builds API/worker passaram em 2026-10-15. Trace exportado e inspecionado ainda pendente."
         - id: OPS-004
           description: "Dois alertas justificados aparecem no Prometheus e os arquivos de regras correspondem."
           status: verified

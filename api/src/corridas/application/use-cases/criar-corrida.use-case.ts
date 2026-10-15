@@ -9,6 +9,7 @@ export interface CriarCorridaCommand {
   origem: string;
   destino: string;
   correlationId: string;
+  traceparent?: string;
 }
 
 export class CriarCorridaUseCase {
@@ -33,6 +34,7 @@ export class CriarCorridaUseCase {
       chave: command.chave,
       hashRequisicao,
       correlationId: command.correlationId,
+      traceparent: command.traceparent,
     });
   }
 }

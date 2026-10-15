@@ -72,6 +72,7 @@ export class CorridasController {
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @Headers("idempotency-key") chave: string | undefined,
     @Headers("x-correlation-id") correlationId: string | undefined,
+    @Headers("x-traceparent") traceparent: string | undefined,
     @Body() body: CriarCorridaDto,
   ) {
     if (!chave?.trim() || chave.length > 255) {
@@ -84,6 +85,7 @@ export class CorridasController {
         origem: body.origem,
         destino: body.destino,
         correlationId: correlationFromHeader(correlationId),
+        traceparent,
       });
       return apresentarCorrida(result.corrida);
     } catch (error) {
@@ -116,6 +118,7 @@ export class CorridasController {
     @UsuarioAtual() usuario: UsuarioAutenticado,
     @Param("id", new ParseUUIDPipe({ version: "4" })) corridaId: string,
     @Headers("x-correlation-id") correlationId: string | undefined,
+    @Headers("x-traceparent") traceparent: string | undefined,
     @Body() body: AlterarStatusDto,
   ) {
     try {
@@ -124,6 +127,7 @@ export class CorridasController {
         motoristaId: usuario.sub,
         novoStatus: body.status,
         correlationId: correlationFromHeader(correlationId),
+        traceparent,
       }));
     } catch (error) {
       rethrowHttpError(error);

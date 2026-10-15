@@ -86,6 +86,7 @@ Os testes de integração com serviços usam o Compose. O script `npm run smoke:
 - Saúde da API: [http://localhost:3001/v1/health](http://localhost:3001/v1/health)
 - Métricas da API: [http://localhost:3001/metrics](http://localhost:3001/metrics)
 - Alertas carregados no Prometheus: [http://localhost:9090/alerts](http://localhost:9090/alerts)
+- Traces OpenTelemetry (Jaeger): [http://localhost:16686](http://localhost:16686)
 - Métricas do worker: endpoint interno `worker:3002/metrics`, coletado pelo Prometheus.
 - Métricas nativas do RabbitMQ: coletadas pelo plugin Prometheus do broker.
 

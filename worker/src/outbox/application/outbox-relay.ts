@@ -3,6 +3,7 @@ import type { ConfirmPublisher } from "../../messaging/confirm-publisher.js";
 import type { OutboxRepository } from "./outbox.repository.js";
 import { camposDoErro, logJson } from "../../../../api/src/shared/observability/json-log.js";
 import { incrementarMetrica } from "../../../../api/src/shared/observability/metrics.js";
+import { context as otelContext, propagation, trace, SpanKind } from "@opentelemetry/api";
 
 export class OutboxRelay {
   private running = false;
@@ -13,7 +14,7 @@ export class OutboxRelay {
     const events = await this.outbox.buscarPendentes(limit);
     let published = 0;
     for (const row of events) {
-      const context = {
+      const logContext = {
         event_id: row.id,
         event_type: row.tipo,
         correlation_id: row.correlationId,
@@ -21,34 +22,46 @@ export class OutboxRelay {
         aggregate_version: row.versaoAgregado,
       };
       try {
+        const parentCarrier = row.traceparent ? { traceparent: row.traceparent } : {};
+        const parentContext = propagation.extract(otelContext.active(), parentCarrier);
+        const tracer = trace.getTracer("corridas-outbox");
         const envelope: EventoCorrida = {
           event_id: row.id,
           event_type: row.tipo as EventoCorrida["event_type"],
           schema_version: row.versaoSchema,
           occurred_at: row.ocorridoEm.toISOString(),
           correlation_id: row.correlationId,
+          ...(row.traceparent ? { traceparent: row.traceparent } : {}),
           corrida_id: row.corridaId,
           aggregate_version: row.versaoAgregado,
           payload: row.payload as EventoCorrida["payload"],
         };
-        this.publisher.publish("corridas", row.tipo, Buffer.from(JSON.stringify(envelope)), {
-          persistent: true,
-          contentType: "application/json",
-          messageId: row.id,
-          correlationId: row.correlationId,
-          timestamp: Math.floor(row.ocorridoEm.getTime() / 1000),
+        await tracer.startActiveSpan("outbox.publish", { kind: SpanKind.PRODUCER }, parentContext, async (span) => {
+          try {
+            await otelContext.with(trace.setSpan(otelContext.active(), span), async () => {
+              this.publisher.publish("corridas", row.tipo, Buffer.from(JSON.stringify(envelope)), {
+                persistent: true,
+                contentType: "application/json",
+                messageId: row.id,
+                correlationId: row.correlationId,
+                timestamp: Math.floor(row.ocorridoEm.getTime() / 1000),
+              });
+              await this.publisher.waitForConfirms();
+            });
+          } finally {
+            span.end();
+          }
         });
-        await this.publisher.waitForConfirms();
         await this.outbox.marcarPublicado(row.id, new Date());
         incrementarMetrica("outbox_events_published_total", "Eventos publicados pela outbox", {
           event_type: row.tipo,
         });
-        logJson("info", "worker", "outbox_event_published", context);
+        logJson("info", "worker", "outbox_event_published", logContext);
         published += 1;
       } catch (error) {
         incrementarMetrica("outbox_delivery_failures_total", "Falhas de entrega da outbox");
         logJson("error", "worker", "outbox_event_publish_failed", {
-          ...context,
+          ...logContext,
           ...camposDoErro(error),
         });
         throw error;

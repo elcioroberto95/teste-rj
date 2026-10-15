@@ -82,6 +82,11 @@ services:
       JWT_AUDIENCE: corridas-api
       PORT: 3000
       REDIS_URL: redis://redis:6379
+      NODE_OPTIONS: --require @opentelemetry/auto-instrumentations-node/register
+      OTEL_SERVICE_NAME: corridas-api
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     ports:
       - "127.0.0.1:3001:3000"
     volumes:
@@ -109,6 +114,11 @@ services:
       RABBITMQ_URL: amqp://corridas:desenvolvimento@rabbitmq:5672
       MONGODB_URL: mongodb://root:desenvolvimento@mongo:27017/corridas?authSource=admin
       REDIS_URL: redis://redis:6379
+      NODE_OPTIONS: --require @opentelemetry/auto-instrumentations-node/register
+      OTEL_SERVICE_NAME: corridas-worker
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     depends_on:
       api:
         condition: service_healthy
@@ -133,6 +143,14 @@ services:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./observability/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheus-data:/prometheus
+    networks: [corridas]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    ports:
+      - "127.0.0.1:16686:16686"
+    expose:
+      - "4318"
     networks: [corridas]
 
   ui:
