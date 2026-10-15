@@ -1,5 +1,12 @@
 export type StatusCorrida = "SOLICITADA" | "ACEITA" | "EM_ANDAMENTO" | "FINALIZADA";
 
+const TRANSICOES_PERMITIDAS: Readonly<Record<StatusCorrida, readonly StatusCorrida[]>> = {
+  SOLICITADA: ["ACEITA"],
+  ACEITA: ["EM_ANDAMENTO"],
+  EM_ANDAMENTO: ["FINALIZADA"],
+  FINALIZADA: [],
+};
+
 export interface Corrida {
   id: string;
   passageiroId: string;
@@ -83,11 +90,9 @@ export function transicionarCorrida(
   novoStatus: StatusCorrida,
   motoristaId: string,
 ): Corrida {
-  const transicaoValida =
-    (corrida.status === "SOLICITADA" && novoStatus === "ACEITA") ||
-    (corrida.status === "ACEITA" && novoStatus === "EM_ANDAMENTO") ||
-    (corrida.status === "EM_ANDAMENTO" && novoStatus === "FINALIZADA");
-  if (!transicaoValida) throw new TransicaoCorridaInvalidaError();
+  if (!TRANSICOES_PERMITIDAS[corrida.status].includes(novoStatus)) {
+    throw new TransicaoCorridaInvalidaError();
+  }
   if (corrida.motoristaId && corrida.motoristaId !== motoristaId) {
     throw new MotoristaNaoResponsavelError();
   }

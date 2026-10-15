@@ -1,7 +1,7 @@
 workflow:
   name: corridas-sddd
   version: 1
-  updated_at: "2026-10-14"
+  updated_at: "2026-10-15"
   methodology: "Spec-Driven Development + Domain-Driven Design"
   source_of_truth: "docs/workflow.yaml"
   status_values:
@@ -129,8 +129,8 @@ workflow:
           evidence: null
         - id: AC12
           description: "Duas aceitações concorrentes resultam em apenas um motorista vencedor."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "2026-10-15: teste HTTP concorrente no Compose retornou um 200 e um 409 para dois motoristas aceitando a mesma corrida."
         - id: AC13
           description: "Compose sobe os oito componentes e a UI permite demonstrar o fluxo."
           status: verified

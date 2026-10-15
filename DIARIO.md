@@ -33,3 +33,5 @@ Tempo consumido: ainda não medido. Registrar o tempo real das próximas sessõe
 - 2026-10-14: Organizamos o worker por fluxo (outbox e projection), separamos contratos e mensageria compartilhada, espelhamos pastas nos testes e corrigimos o diagrama de arquitetura que apontava para worker/src, diretório inexistente. Mudança estrutural sem alteração de comportamento; API/worker reconstruídos e saudáveis, 9 suítes/29 testes, lint e build passaram; smoke test criou corrida e confirmou projeção Redis.
 
 - 2026-10-14: Reorganizamos Auth e Corridas por aplicação (`use-cases`, `ports` e políticas) e infraestrutura. Implementações de hash e emissão JWT foram movidas para a infraestrutura; os casos de uso agora dependem dos contratos via tokens de DI. Testes foram agrupados por contexto. Build, lint e 29 testes em 9 suítes passaram; smoke Compose confirmou health, cadastro e login com JWT.
+
+- 2026-10-15: Declaramos as transições de Corrida em uma tabela imutável por estado e adicionamos teste para caminho permitido e saltos inválidos. Build Docker da API passou; ensaio HTTP simultâneo de dois motoristas resultou em um aceite (200) e um conflito (409), confirmando AC12.

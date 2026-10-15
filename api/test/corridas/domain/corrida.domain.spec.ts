@@ -46,6 +46,20 @@ describe("Corrida", () => {
     expect(finalizada.motoristaId).toBe("motorista-1");
   });
 
+  it("permite somente a próxima transição declarada para cada estado", () => {
+    const solicitada = novaCorrida();
+    const aceita = transicionarCorrida(solicitada, "ACEITA", "motorista-1");
+    const emAndamento = transicionarCorrida(aceita, "EM_ANDAMENTO", "motorista-1");
+    const finalizada = transicionarCorrida(emAndamento, "FINALIZADA", "motorista-1");
+
+    expect(() => transicionarCorrida(solicitada, "FINALIZADA", "motorista-1"))
+      .toThrow(TransicaoCorridaInvalidaError);
+    expect(() => transicionarCorrida(aceita, "FINALIZADA", "motorista-1"))
+      .toThrow(TransicaoCorridaInvalidaError);
+    expect(() => transicionarCorrida(finalizada, "FINALIZADA", "motorista-1"))
+      .toThrow(TransicaoCorridaInvalidaError);
+  });
+
   it("rejeita saltos, regressões e alterações depois da finalização", () => {
     expect(() => transicionarCorrida(novaCorrida(), "EM_ANDAMENTO", "motorista-1"))
       .toThrow(TransicaoCorridaInvalidaError);
