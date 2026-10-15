@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: corridas-config
+data:
+  JWT_ISSUER: corridas-local
+  JWT_AUDIENCE: corridas-api
+  JWT_PUBLIC_KEY_PATH: /run/keys/public.pem
+  JWT_PRIVATE_KEY_PATH: /run/keys/private.pem
+  PORT: "3000"
+  METRICS_PORT: "3002"
+  OTEL_TRACES_EXPORTER: otlp
+  OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    rule_files:
+      - /etc/prometheus/alerts.yml
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9090"]
+      - job_name: corridas-api
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["api:3000"]
+      - job_name: corridas-worker
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["worker:3002"]
+      - job_name: rabbitmq
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["rabbitmq:15692"]
+  alerts.yml: |
+    groups:
+      - name: corridas-availability
+        rules:
+          - alert: HighHttpServerErrorRatio
+            expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(http_requests_total[5m])), 1e-9) > 0.05
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "A API mantém mais de 5% de respostas 5xx"
+              description: "Verifique dependências, logs do serviço e erros HTTP."
+          - alert: OutboxDeliveryFailures
+            expr: increase(outbox_delivery_failures_total[5m]) > 0
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "O relay falhou ao entregar eventos da outbox"
+              description: "Verifique RabbitMQ e conectividade do worker."

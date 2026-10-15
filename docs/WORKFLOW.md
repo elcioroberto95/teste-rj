@@ -74,7 +74,7 @@ worker/
   src/messaging/   # Confirmação de publicação RabbitMQ
   src/contracts/   # Envelope versionado de eventos
 loadtest/          # Cenário k6 e relatório
-k8s/               # Parte 3, ainda pendente
+k8s/               # manifests Kustomize; rollout local pendente
 observability/     # Scrape Prometheus e alertas
 ui/src/            # Fluxo mínimo do avaliador
 api/test/          # Testes organizados por contexto e fluxo

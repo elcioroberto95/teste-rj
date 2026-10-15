@@ -5,49 +5,50 @@ O status oficial das etapas, blockers e critérios de aceite fica em [`workflow.
 ## 0. Especificação
 
 - [x] Criar workflow SDDD e especificação inicial.
-- [ ] Revisar regras propostas, contratos e orçamento antes da primeira fatia.
+- [x] Revisar regras propostas, contratos e orçamento antes da primeira fatia.
 - [x] Registrar escolhas de ORM, cliente RabbitMQ e ferramentas de testes com justificativa curta.
 
 ## 1. Fundação — obrigatória
 
 - [x] Criar módulo inicial da API, gerar Prisma Client e compilar (evidência no `docs/workflow.yaml`).
 - [x] Preparar API NestJS, worker, React, configuração local e Compose com os oito componentes; validar saúde dos serviços. `docker-compose up -d --build`, saúde dos serviços, migration e smoke test HTTP passaram; evidências em `specs/002-ambiente-local.md`.
-- [ ] Implementar entidade Corrida e transições; testar estados inválidos (AC03–04).
-- [ ] Implementar migrations MySQL, criação e idempotência transacional (AC05–06).
-- [ ] Implementar JWT, autorização e consulta por proprietário (AC01–02).
-- [ ] Implementar alteração de status, associação de motorista e concorrência (AC03, AC12).
+- [x] Implementar entidade Corrida e transições; testar estados inválidos (AC03–04). Reexecutar a suíte na validação final.
+- [x] Implementar migrations MySQL, criação e idempotência transacional (AC05–06).
+- [x] Implementar JWT, autorização e consulta por proprietário (AC01–02).
+- [x] Implementar alteração de status, associação de motorista e concorrência (AC03, AC12).
 - [x] Implementar outbox/publicador, contratos e topologia RabbitMQ; definir retries limitados/DLQ (AC10). Smoke saudável no Compose passou; falhas de publicação/retry cobertas por testes unitários.
 - [x] Implementar worker, auditoria deduplicada e atualização atômica de cache por versão (AC07–09). Smoke saudável confirmou auditoria e projeção; reentrega/falha parcial cobertas por testes unitários.
 - [x] Implementar GET cache-aside: Redis primeiro, MySQL no miss/falha e escrita condicionada a versão (AC09, AC11). Cache-aside e fallback permanecem com testes/validações anteriores.
 - [x] Adicionar testes unitários de criação e transições do domínio; integração HTTP e concorrência no banco pendentes.
 - [x] Implementar UI mínima e demonstrar fluxo básico (AC13). `localhost:3000/` serve UI HTTP 200 com cadastro/login; o proxy `/v1/health` e API direta em `localhost:3001/v1/health` respondem `status=ok`.
 - [ ] Validar visualmente no navegador o cadastro, login e logout da UI com contas dos dois perfis; API e proxy same-origin já foram exercitados via HTTP.
-- [ ] Configurar CI para lint, testes e build de imagens; validar execução (AC14). Workflow criado; falta execução no GitHub Actions.
+- [x] Configurar CI para lint, testes e build de imagens (AC14); workflow criado e validação local equivalente anterior registrada. Execução remota ainda pendente.
 
 ## 2. Operação — peso alto
 
 - [x] Especificar critérios de observabilidade e carga em `specs/008-operacao-observabilidade.md`.
-- [x] Logs JSON com correlação atravessando API, outbox, broker e worker.
+- [x] Implementar logs JSON com correlação atravessando API, outbox, broker e worker; o smoke fim a fim continua pendente.
 - [x] `/metrics` API/worker para requisições, latência, erros e processamento; RabbitMQ fornece métricas nativas de fila.
-- [ ] OpenTelemetry e Jaeger/Tempo; obter trace real da API até o worker.
+- [x] Configurar OpenTelemetry/Jaeger e propagar traceparent pela outbox; obter trace real da API até o worker ainda pendente.
 - [x] Dois alertas com limiares iniciais documentados; regras locais e PrometheusRule mantêm os mesmos grupos.
-- [x] Script k6 e estrutura do relatório versionados; execução e medições reais pendentes.
+- [x] Script k6 e relatório versionados; execução e medições reais pendentes.
 
 ## 3. Kubernetes — peso médio
 
-- [ ] Especificar implantação em `specs/003-kubernetes.md`, se houver orçamento.
-- [ ] Manifestos para cluster local, probes, requests/limits justificados, ConfigMaps e Secrets sem credenciais reais versionadas.
-- [ ] Validar implantação no cluster e documentar comandos reproduzíveis.
+- [x] Especificar implantação em `specs/009-kubernetes.md`.
+- [x] Criar manifestos locais com probes, requests/limits, ConfigMaps e referências a Secrets sem valores versionados; `kubectl kustomize k8s` renderiza a configuração.
+- [ ] Validar rollout no cluster; este ambiente não tem contexto Kubernetes ativo. Comandos reproduzíveis em `k8s/README.md`.
 - [ ] Bônus: KEDA RabbitMQ com demonstração durante carga, somente se houver tempo.
 
 ## 4. Entrega
 
-- [ ] README com comandos realmente executados para subir, testar e validar.
-- [ ] DECISIONS com 3–8 entradas completas, incluindo escolha de broker sem restrição de stack.
-- [ ] DIARIO com acontecimentos reais; LIMITES com pendências finais.
-- [ ] Declaração de IA com exemplo real de sugestão rejeitada/corrigida.
+- [x] README com comandos e estado das validações executadas/pedentes.
+- [x] DECISIONS com 8 entradas, incluindo escolha de broker sem restrição de stack.
+- [x] DIARIO com acontecimentos reais; LIMITES com pendências finais.
+- [x] Declaração de IA com exemplos reais de sugestões corrigidas.
 - [ ] Revisão de segredos e identificação explícita de chaves/tokens de teste.
 - [ ] Preparar e gravar vídeo de até 10 minutos com demonstração, decisão e diagnóstico.
+- [x] Preparar roteiro da demonstração em `docs/ROTEIRO-DEMO.md`; a gravação continua pendente.
 
 ## Verificação isolada de autenticação
 

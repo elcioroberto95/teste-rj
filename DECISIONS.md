@@ -52,3 +52,10 @@ Para os testes, usar Jest integrado ao NestJS. Testes unitários cobrem regras s
 - Alternativas: consultar MySQL para validar versão em todo GET; cache-aside com consistência eventual; atualizar o Redis sincronamente na API.
 - Escolha: cache-aside; GET pode servir status levemente atrasado até o worker aplicar o evento, e recorre a MySQL em miss/indisponibilidade. A resposta do PATCH permanece confirmada pelo MySQL.
 - Trade-off: melhor aproveitamento do cache, com janela explícita de consistência eventual. Proteger autorização por proprietário também no caminho de cache.
+
+## 8. Kubernetes local
+
+- Contexto: o desafio pede manifestos de implantação, probes, limites de recursos e segredos separados.
+- Alternativas: reproduzir Compose sem limites; usar Helm/Kustomize com dependências locais; criar um cluster gerenciado.
+- Escolha: Kustomize com Deployments e Services de nó único, PVCs para bancos/broker/cache, ConfigMaps sem credenciais e Secrets criados por comandos locais.
+- Trade-off: simples de aplicar em Docker Desktop Kubernetes ou Minikube e fácil de revisar; não oferece HA, gestão externa de segredos nem escala de produção. O rollout continua pendente enquanto não houver cluster ativo.

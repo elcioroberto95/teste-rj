@@ -35,6 +35,11 @@ async function main(): Promise<void> {
   logJson("info", "worker", "worker_dependencies_connected");
   const metricsPort = Number(process.env.METRICS_PORT ?? 3002);
   const metricsServer = createServer((request, response) => {
+    if (request.method === "GET" && request.url === "/health") {
+      response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+      response.end(JSON.stringify({ status: "ok" }));
+      return;
+    }
     if (request.method !== "GET" || request.url !== "/metrics") {
       response.writeHead(404).end();
       return;

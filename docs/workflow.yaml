@@ -261,33 +261,41 @@ workflow:
 
     - id: kubernetes
       name: Implantação Kubernetes
-      status: not_started
+      status: blocked
       priority: medium
       depends_on:
         - operations
       estimate_minutes: null
-      blockers: []
+      blockers:
+        - id: B-K8S-001
+          status: open
+          description: "O ambiente não tem current-context Kubernetes selecionado; não há API server local em localhost:8080."
+          owner: environment
+          resolution: "Habilitar Kubernetes no Docker Desktop ou iniciar Minikube; depois aplicar k8s/ e registrar rollout."
+          blocks:
+            - K8S-001
       acceptance_criteria:
         - id: K8S-001
           description: "Manifestos iniciam a aplicação em cluster local."
           status: pending
-          evidence: null
+          evidence: "Manifestos Kustomize renderizam; kubectl não tem current-context configurado neste ambiente e não há API Kubernetes em localhost:8080. Rollout pendente."
         - id: K8S-002
           description: "Deployments têm probes e requests/limits justificados."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "Revisão de k8s/workloads.yaml: probes de startup/readiness/liveness e requests/limits; kubectl kustomize k8s passou em 2026-10-15."
         - id: K8S-003
           description: "Configuração usa ConfigMap/Secret sem credenciais reais versionadas."
-          status: pending
+          status: verified
+          evidence: "ConfigMaps e referências a Secrets separados nos manifests; valores locais e chaves são criados por comandos em k8s/README.md e não foram versionados. kubectl kustomize k8s passou em 2026-10-15."
         - id: K8S-004
           description: "Bônus KEDA demonstra escala do worker pelo tamanho da fila durante carga."
           status: pending
           optional: true
-          evidence: null
+          evidence: "Bônus não implementado; depende de KEDA e execução de carga."
 
     - id: delivery
       name: Revisão e entrega
-      status: not_started
+      status: in_progress
       priority: required
       depends_on:
         - foundation
@@ -296,20 +304,20 @@ workflow:
       acceptance_criteria:
         - id: DEL-001
           description: "README permite reproduzir e validar o que foi efetivamente executado."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "README.md revisado com comandos Compose, build, operação, estado do trace/k6 e referência aos comandos Kustomize."
         - id: DEL-002
           description: "DECISIONS, DIARIO e LIMITES refletem decisões e resultados reais."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "DECISIONS.md, DIARIO.md e LIMITES.md revisados em 2026-10-15 para refletir tracing configurado, builds, manifests e validações pendentes."
         - id: DEL-003
           description: "README declara o uso de IA e inclui exemplo real de sugestão corrigida ou rejeitada."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "README.md inclui uso de IA e exemplos reais de sugestões corrigidas: sessão demo substituída por cadastro persistido e worker movido para atender a árvore do desafio."
         - id: DEL-004
           description: "Vídeo de até 10 minutos demonstra o sistema, uma decisão e um diagnóstico."
           status: pending
-          evidence: null
+          evidence: "Roteiro preparado em docs/ROTEIRO-DEMO.md; gravação ainda pendente."
 
   rules:
     stage_done_requires: "Todos os critérios obrigatórios verified e nenhum blocker open."

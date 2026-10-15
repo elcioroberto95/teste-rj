@@ -12,6 +12,7 @@ Estado revisado em 2026-10-15. Consulte [docs/workflow.yaml](docs/workflow.yaml)
 - Dois alertas carregados no Prometheus.
 - Um smoke HTTP confirmou `correlation_id` entre o header recebido/devolvido e o log JSON da API.
 - OpenTelemetry configurado na API e no worker; `traceparent` é salvo na outbox, e Jaeger recebe OTLP/HTTP. Builds das duas imagens passaram; trace integrado ainda não foi observado.
+- Kustomize renderiza os manifests locais; eles incluem os oito componentes, probes, recursos, PVCs e orientação para Secrets. Não há contexto Kubernetes ativo neste ambiente, portanto o rollout ainda não foi verificado.
 
 ## Pendente
 
@@ -20,7 +21,7 @@ Estado revisado em 2026-10-15. Consulte [docs/workflow.yaml](docs/workflow.yaml)
 - Execução k6 e relatório com medidas reais.
 - Executar lint e suíte de testes depois da reorganização dos arquivos do worker.
 - Revisão manual da UI no navegador e execução remota do GitHub Actions.
-- Manifestos Kubernetes, vídeo de apresentação e atualização final de documentação para entrega.
+- Rollout Kubernetes em cluster local, vídeo de apresentação e atualização final de documentação para entrega.
 
 ## Riscos e melhorias futuras
 
