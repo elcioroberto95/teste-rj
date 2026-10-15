@@ -125,8 +125,8 @@ workflow:
           evidence: "2026-10-15: corrida foi criada com RabbitMQ parado; após reconexão do worker, outbox publicou evento e MongoDB/Redis convergiram."
         - id: AC11
           description: "Consulta de corrida funciona via MySQL quando Redis está indisponível."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "2026-10-15: Redis parado; GET autenticado retornou a corrida normalmente via fallback MySQL."
         - id: AC12
           description: "Duas aceitações concorrentes resultam em apenas um motorista vencedor."
           status: verified
