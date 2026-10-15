@@ -241,19 +241,19 @@ workflow:
         - id: OPS-001
           description: "Logs JSON propagam correlation_id entre API, broker e worker."
           status: pending
-          evidence: "Implementação iniciada em 2026-10-15: middleware HTTP, publicação da outbox e consumo/retry registram correlation_id; smoke integrado pendente."
+          evidence: "Implementado nos três pontos. Smoke 2026-10-15 confirmou header e log JSON HTTP com correlation_id; jornada correlacionada até outbox/broker/worker ainda pendente."
         - id: OPS-002
           description: "API e worker expõem métricas Prometheus de requisições, latência, erros e fila."
-          status: pending
-          evidence: "Endpoint /metrics da API e worker, counters/histogram e scrape RabbitMQ configurados; validação de scrape ainda pendente."
+          status: verified
+          evidence: "2026-10-15: imagens API/worker construídas; API /metrics retornou HTTP 200; Prometheus mostrou corridas-api, corridas-worker e rabbitmq up, e consulta up{job=\"corridas-worker\"} retornou 1."
         - id: OPS-003
           description: "Um trace observado percorre API, RabbitMQ e worker."
           status: pending
           evidence: null
         - id: OPS-004
           description: "Dois alertas justificados aparecem no Prometheus e os arquivos de regras correspondem."
-          status: pending
-          evidence: "Dois alertas adicionados em observability/alerts.yml e alerts-prometheusrule.yaml; carga e estado ativo no Prometheus ainda pendentes."
+          status: verified
+          evidence: "2026-10-15: /api/v1/rules do Prometheus listou HighHttpServerErrorRatio e OutboxDeliveryFailures; os grupos e expressões correspondem a observability/alerts.yml e alerts-prometheusrule.yaml."
         - id: OPS-005
           description: "Script k6 e relatório registram cenário e medições reais."
           status: pending
