@@ -117,8 +117,8 @@ workflow:
           evidence: "2026-10-15: com Redis indisponível, MongoDB gravou a auditoria; worker continuou ativo, Redis voltou e a mensagem de retry convergiu a projeção."
         - id: AC09
           description: "Evento antigo e cache miss não regridem a versão armazenada no Redis; GET usa fallback MySQL."
-          status: pending
-          evidence: null
+          status: verified
+          evidence: "2026-10-15: evento versão 1 reenviado com Redis em versão 2 não regrediu cache; após DEL, GET retornou versão 2 via MySQL e repopulou Redis."
         - id: AC10
           description: "Broker indisponível não perde evento confirmado; projeção converge após recuperação."
           status: pending
