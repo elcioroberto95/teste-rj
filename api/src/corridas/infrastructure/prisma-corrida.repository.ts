@@ -13,6 +13,8 @@ import type { Corrida } from "../domain/corrida.js";
 import {
   ConflitoVersaoCorridaError,
   CorridaNaoEncontradaError,
+  MotoristaComCorridaAtivaError,
+  STATUS_CORRIDA_ATIVA,
   transicionarCorrida,
 } from "../domain/corrida.js";
 
@@ -65,6 +67,21 @@ export class PrismaCorridaRepository implements CorridaCommandRepository, Corrid
         input.novoStatus,
         input.motoristaId,
       );
+
+      if (input.novoStatus === "ACEITA") {
+        await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+          SELECT id FROM usuarios WHERE id = ${input.motoristaId} FOR UPDATE
+        `);
+        const corridasAtivas = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+          SELECT id FROM corridas
+          WHERE motoristaId = ${input.motoristaId}
+            AND status IN (${STATUS_CORRIDA_ATIVA[0]}, ${STATUS_CORRIDA_ATIVA[1]})
+            AND id <> ${input.corridaId}
+          LIMIT 1 FOR UPDATE
+        `);
+        if (corridasAtivas.length > 0) throw new MotoristaComCorridaAtivaError();
+      }
+
       const resultado = await tx.corrida.updateMany({
         where: {
           id: corridaAtual.id,

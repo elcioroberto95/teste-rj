@@ -15,6 +15,7 @@
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
+    "smoke:active-driver": "node scripts/smoke-motorista-corrida-ativa.mjs",
     "keys:dev": "node scripts/gerar-chaves-dev.mjs",
     "token:dev": "node scripts/emitir-token-dev.mjs"
   },

@@ -1,5 +1,6 @@
 export const STATUS_CORRIDA = ["SOLICITADA", "ACEITA", "EM_ANDAMENTO", "FINALIZADA"] as const;
 export type StatusCorrida = (typeof STATUS_CORRIDA)[number];
+export const STATUS_CORRIDA_ATIVA = ["ACEITA", "EM_ANDAMENTO"] as const satisfies readonly StatusCorrida[];
 
 const TRANSICOES_PERMITIDAS: Readonly<Record<StatusCorrida, readonly StatusCorrida[]>> = {
   SOLICITADA: ["ACEITA"],
@@ -67,6 +68,13 @@ export class MotoristaNaoResponsavelError extends Error {
   constructor() {
     super("A corrida já está associada a outro motorista");
     this.name = "MotoristaNaoResponsavelError";
+  }
+}
+
+export class MotoristaComCorridaAtivaError extends Error {
+  constructor() {
+    super("Motorista já possui uma corrida ativa");
+    this.name = "MotoristaComCorridaAtivaError";
   }
 }
 

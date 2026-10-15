@@ -138,7 +138,7 @@ workflow:
         - id: AC14
           description: "CI executa lint, testes e build de imagens em push e pull request."
           status: pending
-          evidence: null
+          evidence: "2026-10-15: validação local equivalente passou: lint API/UI, 34 testes, build API, docker-compose config e builds API/UI; execução GitHub Actions ainda depende de push/PR."
 
         - id: DRV-01
           description: "Motorista lista corridas solicitadas sem motorista associado."
@@ -160,6 +160,18 @@ workflow:
           description: "Motorista nao consulta corrida associada a outro motorista."
           status: verified
           evidence: "Fluxo HTTP no Compose em 2026-10-14: motorista diferente recebeu 403 ao consultar detalhes."
+        - id: DRV-06
+          description: "Motorista com corrida ativa nao consegue aceitar outra."
+          status: verified
+          evidence: "2026-10-15: smoke HTTP no Compose; segundo aceite retornou 409 com a primeira corrida em ACEITA e EM_ANDAMENTO."
+        - id: DRV-07
+          description: "Motorista consegue aceitar outra corrida depois de finalizar a atual."
+          status: verified
+          evidence: "2026-10-15: smoke HTTP no Compose; apos finalizar a corrida A, o aceite da corrida B retornou 200."
+        - id: DRV-08
+          description: "Aceitacoes simultaneas de corridas diferentes pelo mesmo motorista deixam somente uma ativa."
+          status: verified
+          evidence: "2026-10-15: Promise.all de dois PATCH no Compose retornou um 200 e um 409."
 
         - id: AUTH-01
           description: "JwtGuard retorna 401 para ausência, invalidade e expiração de token e para claims inválidas."

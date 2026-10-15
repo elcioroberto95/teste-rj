@@ -42,6 +42,7 @@ model Corrida {
   atualizadaEm DateTime     @updatedAt @db.DateTime(3)
 
   @@index([passageiroId, criadaEm])
+  @@index([motoristaId, status])
   @@map("corridas")
 }
 

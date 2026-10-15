@@ -27,6 +27,7 @@ import {
   ConflitoVersaoCorridaError,
   CorridaInvalidaError,
   CorridaNaoEncontradaError,
+  MotoristaComCorridaAtivaError,
   MotoristaNaoResponsavelError,
   TransicaoCorridaInvalidaError,
 } from "../domain/corrida.js";
@@ -43,6 +44,7 @@ function rethrowHttpError(error: unknown): never {
   if (
     error instanceof ChaveIdempotenciaConflitanteError ||
     error instanceof ConflitoVersaoCorridaError ||
+    error instanceof MotoristaComCorridaAtivaError ||
     error instanceof TransicaoCorridaInvalidaError
   ) {
     throw new ConflictException(error.message);
