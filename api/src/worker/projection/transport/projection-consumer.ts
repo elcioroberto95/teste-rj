@@ -2,7 +2,7 @@ import type { ConfirmChannel, ConsumeMessage } from "amqplib";
 import type { ProcessarEventoCorridaUseCase } from "../application/processar-evento-corrida.use-case.js";
 import type { RetryPublisher } from "../application/projection-ports.js";
 import { validarEvento } from "../../contracts/event-envelope.js";
-import { logJson } from "../../../shared/observability/json-log.js";
+import { camposDoErro, logJson } from "../../../shared/observability/json-log.js";
 
 export class ProjectionConsumer {
   constructor(
@@ -42,7 +42,7 @@ export class ProjectionConsumer {
         : messageContext;
       logJson("error", "worker", "projection_event_failed", {
         ...context,
-        error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+        ...camposDoErro(error),
       });
       try {
         await this.retryPublisher.encaminhar(message.content, message.properties.headers ?? {});
@@ -51,9 +51,7 @@ export class ProjectionConsumer {
       } catch (publishError) {
         logJson("error", "worker", "projection_retry_publish_failed", {
           ...context,
-          error: publishError instanceof Error
-            ? { name: publishError.name, message: publishError.message }
-            : String(publishError),
+          ...camposDoErro(publishError),
         });
         this.channel.nack(message, false, true);
       }

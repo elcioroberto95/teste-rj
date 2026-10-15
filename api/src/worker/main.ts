@@ -11,6 +11,7 @@ import { RedisCorridaProjection } from "./projection/infrastructure/redis-corrid
 import { ProcessarEventoCorridaUseCase } from "./projection/application/processar-evento-corrida.use-case.js";
 import { RabbitRetryPublisher } from "./projection/infrastructure/rabbit-retry.publisher.js";
 import { configurarTopologia } from "./projection/infrastructure/rabbitmq-topology.js";
+import { camposDoErro, logJson } from "../shared/observability/json-log.js";
 
 const esperar = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -18,13 +19,18 @@ async function main(): Promise<void> {
   const rabbitUrl = process.env.RABBITMQ_URL;
   const mongoUrl = process.env.MONGODB_URL;
   const redisUrl = process.env.REDIS_URL;
-  if (!rabbitUrl || !mongoUrl || !redisUrl) throw new Error("Configure RABBITMQ_URL, MONGODB_URL e REDIS_URL");
+  if (!rabbitUrl || !mongoUrl || !redisUrl) {
+    throw new Error("Configure RABBITMQ_URL, MONGODB_URL e REDIS_URL");
+  }
 
   const prisma = new PrismaService();
   const mongo = new MongoClient(mongoUrl);
   const redis = createClient({ url: redisUrl });
-  redis.on("error", (error) => console.error("Erro de conexão do Redis no worker", error));
+  redis.on("error", (error) => {
+    logJson("error", "worker", "redis_connection_error", camposDoErro(error));
+  });
   await Promise.all([prisma.$connect(), mongo.connect(), redis.connect()]);
+  logJson("info", "worker", "worker_dependencies_connected");
 
   const audit = new MongoEventoAuditRepository(mongo.db());
   await audit.initialize();
@@ -37,6 +43,7 @@ async function main(): Promise<void> {
   let currentConnection: ChannelModel | undefined;
   const stop = () => {
     stopping = true;
+    logJson("info", "worker", "worker_shutdown_requested");
     currentRelay?.stop();
     void currentConnection?.close().catch(() => undefined);
   };
@@ -53,9 +60,13 @@ async function main(): Promise<void> {
       try {
         connection = await amqp.connect(rabbitUrl);
         currentConnection = connection;
-        connection.on("error", (error) => console.error("Erro de conexão do RabbitMQ no worker", error));
+        connection.on("error", (error) => {
+          logJson("error", "worker", "rabbit_connection_error", camposDoErro(error));
+        });
         channel = await connection.createConfirmChannel();
-        channel.on("error", (error) => console.error("Erro no canal RabbitMQ do worker", error));
+        channel.on("error", (error) => {
+          logJson("error", "worker", "rabbit_channel_error", camposDoErro(error));
+        });
         await configurarTopologia(channel);
 
         const consumer = new ProjectionConsumer(processarEvento, new RabbitRetryPublisher(channel), channel);
@@ -64,13 +75,16 @@ async function main(): Promise<void> {
         relay = new OutboxRelay(outboxRepository, channel);
         currentRelay = relay;
         relayTask = relay.start();
+        logJson("info", "worker", "rabbit_consumer_and_relay_started");
 
         await new Promise<void>((resolve) => {
           connection?.once("close", resolve);
           channel?.once("close", resolve);
         });
       } catch (error) {
-        if (!stopping) console.error("Worker desconectado do RabbitMQ; tentando reconectar", error);
+        if (!stopping) {
+          logJson("warn", "worker", "rabbit_disconnected_reconnecting", camposDoErro(error));
+        }
       } finally {
         relay?.stop();
         if (relayTask) await relayTask;
@@ -80,7 +94,10 @@ async function main(): Promise<void> {
         await connection?.close().catch(() => undefined);
       }
 
-      if (!stopping) await esperar(1000);
+      if (!stopping) {
+        logJson("info", "worker", "rabbit_reconnect_scheduled", { delay_ms: 1000 });
+        await esperar(1000);
+      }
     }
   } finally {
     await Promise.all([prisma.$disconnect(), mongo.close(), redis.quit()]);
@@ -88,6 +105,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  console.error("Worker não iniciou", error);
+  logJson("error", "worker", "worker_startup_failed", camposDoErro(error));
   process.exitCode = 1;
 });

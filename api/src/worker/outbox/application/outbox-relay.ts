@@ -1,7 +1,7 @@
 import type { EventoCorrida } from "../../contracts/event-envelope.js";
 import type { ConfirmPublisher } from "../../messaging/confirm-publisher.js";
 import type { OutboxRepository } from "./outbox.repository.js";
-import { logJson } from "../../../shared/observability/json-log.js";
+import { camposDoErro, logJson } from "../../../shared/observability/json-log.js";
 
 export class OutboxRelay {
   private running = false;
@@ -44,7 +44,7 @@ export class OutboxRelay {
       } catch (error) {
         logJson("error", "worker", "outbox_event_publish_failed", {
           ...context,
-          error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+          ...camposDoErro(error),
         });
         throw error;
       }
@@ -59,9 +59,7 @@ export class OutboxRelay {
         const count = await this.runOnce();
         if (count === 0) await new Promise((resolve) => setTimeout(resolve, intervalMs));
       } catch (error) {
-        logJson("error", "worker", "outbox_relay_iteration_failed", {
-          error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
-        });
+        logJson("error", "worker", "outbox_relay_iteration_failed", camposDoErro(error));
         await new Promise((resolve) => setTimeout(resolve, intervalMs));
       }
     }
